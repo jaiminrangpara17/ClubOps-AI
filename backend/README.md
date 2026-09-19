@@ -1,34 +1,49 @@
-# ClubOps AI Backend
+# ⚙️ ClubOps AI — Backend API Service
 
-Technology:
-- Python
-- FastAPI
-- Uvicorn
+[![FastAPI](https://img.shields.io/badge/FastAPI-0.100+-009688?logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com/)
+[![Python](https://img.shields.io/badge/Python-3.11+-3776AB?logo=python&logoColor=white)](https://www.python.org/)
+[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16-4169E1?logo=postgresql&logoColor=white)](https://www.postgresql.org/)
 
-Setup:
+The **ClubOps AI Backend** is a high-performance RESTful API service built with FastAPI and PostgreSQL. It powers authentication, event lifecycles, team permissions, volunteer rosters, and operational persistence for ClubOps AI.
 
+---
+
+## 🚀 Quick Start
+
+### 1. Prerequisites
+- **Python**: 3.11 or later
+- **PostgreSQL**: 16 (or run via Docker at repository root: `docker compose up -d`)
+
+### 2. Environment Setup
+
+```bash
+cd backend
 python -m venv .venv
-
-Windows:
-
-.venv\Scripts\activate
-
-Install:
-
+source .venv/bin/activate       # On Windows: .venv\Scripts\activate
 pip install -r requirements.txt
+cp .env.example .env            # Configure database credentials
+```
 
-Run:
+### 3. Run the Development Server
 
-uvicorn app.main:app --reload
+```bash
+uvicorn app.main:app --reload --port 8000
+```
 
-Health:
+---
 
-GET /health
+## 📚 API Documentation
 
-Swagger:
+Once the server is running, interactive API documentation is available at:
 
-/docs
+- **Swagger UI**: [http://localhost:8000/docs](http://localhost:8000/docs)
+- **ReDoc**: [http://localhost:8000/redoc](http://localhost:8000/redoc)
+- **Health Check**: `GET http://localhost:8000/health`
 
-ReDoc:
+---
 
-/redoc
+## 🧪 Testing
+
+```bash
+pytest
+```

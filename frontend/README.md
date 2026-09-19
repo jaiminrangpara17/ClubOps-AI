@@ -6,23 +6,33 @@
 [![TailwindCSS](https://img.shields.io/badge/TailwindCSS-4.1.17-06B6D4?logo=tailwindcss&logoColor=white)](https://tailwindcss.com/)
 [![React Router](https://img.shields.io/badge/React_Router-7.18.4-CA4245?logo=react-router&logoColor=white)](https://reactrouter.com/)
 
-The **ClubOps AI Frontend** is a modern, responsive web application engineered to serve as the unified operations command center for student clubs, collegiate societies, community organizations, and non-profits.
+The **ClubOps AI Frontend** is a modern, responsive single-page web application engineered to serve as the unified operations command center for collegiate clubs, student organizations, and community teams.
 
 ---
 
-## ✨ Features & Modules
+## ✨ Features & Architecture Breakdown
 
 ### 📊 1. Operations Command Dashboard (`/dashboard`)
 - **Interactive Executive AI Briefing**: On-demand AI-generated operational digests summarizing event readiness, volunteer coverage gaps, and blocked dependencies with copy and export functionality.
 - **Operational Summary Export**: One-click download of the complete operational state as structured JSON.
 - **Key Metrics & Statistics**: Real-time KPI cards covering active tasks, volunteers, pending items, and active risks.
-- **Upcoming Deadlines & Priority Queues**: Filterable task deadlines sorted chronologically with status badges.
+- **Modular Dashboard Architecture**:
+  - `AIDailyBrief`: Contextual operational digest generation.
+  - `DashboardHeader`: Context header with actions and event switcher.
+  - `DashboardSection`: Reusable collapsible dashboard section wrapper.
+  - `EventProgress`: Multi-phase readiness meter.
+  - `OverviewStats`: KPI cards with trend indicators.
+  - `PriorityTasks`: Urgent item queues with filter by status.
+  - `RecentActivity`: Real-time audit log and event updates.
+  - `RiskSummary`: High-priority operational risks with mitigation suggestions.
+  - `UpcomingDeadlines`: Chronologically sorted milestone timeline.
+  - `VolunteerSnapshot`: Real-time volunteer coverage and attendance.
 - **Event Context Header**: Switch between active events with real-time readiness progress gauges.
 
 ### 📅 2. Event Hub & Management (`/events`)
 - Multi-event workspace for tracking concurrent club initiatives.
 - Lifecycle filtering (`Planning`, `Active`, `Completed`, `On Hold`).
-- Event creation modal with venue, dates, and budget details.
+- Event creation and editing modal (`EventForm.tsx`) with validation, venue, dates, and budget details.
 
 ### ⚡ 3. Dedicated Event Workspaces (`/events/:eventId/*`)
 Each event provides focused sub-workspaces:
@@ -54,36 +64,38 @@ Each event provides focused sub-workspaces:
 
 ```text
 frontend/
-├── public/                 # Static public assets
+├── public/                     # Static assets & icons
 ├── src/
-│   ├── components/         # Reusable UI & Layout components
-│   │   ├── auth/           # Route guards & auth checks
-│   │   ├── common/         # Shared capability cards & notices
-│   │   ├── layout/         # Navigation, Sidebar, Topbar, Header, Switcher
-│   │   └── ui/             # Design system atomic components
-│   ├── context/            # React Contexts (Auth, Event, Theme)
-│   ├── data/               # Demo data sets (dashboard, events, tasks, risks)
-│   ├── hooks/              # Custom hooks (media query, scroll lock, outside click)
-│   ├── lib/                # Utilities (class names, formatting, status helpers)
-│   ├── pages/              # Application view routes
-│   │   ├── event/          # Event sub-pages (Tasks, Copilot, Risks, etc.)
-│   │   ├── DashboardPage.tsx
-│   │   ├── EventsPage.tsx
-│   │   ├── FoundationPage.tsx
-│   │   ├── LoginPage.tsx
-│   │   ├── SettingsPage.tsx
-│   │   └── NotFoundPage.tsx
-│   ├── routes/             # App routing tree (AppRoutes.tsx)
-│   ├── services/           # HTTP requests, mock auth, session management
-│   ├── styles/             # Base CSS and token definitions
-│   ├── types/              # TypeScript interface & type definitions
-│   ├── App.tsx             # Root React application component
-│   ├── index.css           # Global stylesheet with Tailwind v4
-│   └── main.tsx            # Application entry point
-├── index.html              # HTML template
-├── package.json            # Scripts and dependencies
-├── tsconfig.json           # TypeScript configuration
-└── vite.config.ts          # Vite build configuration with singlefile bundle
+│   ├── components/             # Reusable UI, Layout, Dashboard & Event components
+│   │   ├── auth/               # Route guards & auth checks (ProtectedRoute.tsx)
+│   │   ├── common/             # PlannedCapabilities, PreviewNotice
+│   │   ├── dashboard/          # Modular Dashboard widgets (AIDailyBrief, OverviewStats, etc.)
+│   │   ├── event/              # Event management components (EventForm.tsx)
+│   │   ├── layout/             # Navigation, Sidebar, Topbar, Header, Switcher
+│   │   └── ui/                 # Design system atomic components (Button, Badge, Card, etc.)
+│   ├── context/                # React Contexts (AuthContext, EventContext, ThemeContext)
+│   ├── data/                   # Demo data sets (demoEvents, demoNotifications, mockDashboardData)
+│   ├── hooks/                  # Custom hooks (useEvent, useEvents, useSectionData, useMediaQuery)
+│   ├── lib/                    # Utilities (auth, cn, format, status, navigation, eventForm)
+│   ├── pages/                  # Application view routes
+│   │   ├── event/              # Event sub-pages (Tasks, Copilot, Risks, Meetings, etc.)
+│   │   ├── DashboardPage.tsx   # Executive command dashboard
+│   │   ├── EventsPage.tsx      # All events listing and creation
+│   │   ├── FoundationPage.tsx  # UI component gallery & design tokens
+│   │   ├── LoginPage.tsx       # Auth login with demo quick-fills
+│   │   ├── SettingsPage.tsx    # User and application settings
+│   │   └── NotFoundPage.tsx    # 404 handler
+│   ├── routes/                 # Application routing tree (AppRoutes.tsx)
+│   ├── services/               # API clients (apiMode, authService, dashboardService, eventService, http)
+│   ├── styles/                 # CSS tokens and base stylesheets (base.css, tokens.css)
+│   ├── types/                  # TypeScript interface & type definitions (auth, dashboard, event, ui)
+│   ├── App.tsx                 # Root application component
+│   ├── index.css               # Global stylesheet with Tailwind v4
+│   └── main.tsx                # Application entry point
+├── index.html                  # HTML template
+├── package.json                # Scripts and dependencies
+├── tsconfig.json               # TypeScript configuration
+└── vite.config.ts              # Vite build configuration with singlefile bundle
 ```
 
 ---
