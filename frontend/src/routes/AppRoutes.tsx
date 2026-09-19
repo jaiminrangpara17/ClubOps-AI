@@ -1,42 +1,54 @@
-import { Route, Routes } from "react-router-dom";
-import { AppShell } from "@/components/layout";
-import { NAV_ITEMS } from "@/lib/navigation";
+import { Navigate, Route, Routes } from "react-router-dom";
+import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
+import { AppLayout, EventLayout } from "@/components/layout";
+import DashboardPage from "@/pages/DashboardPage";
+import EventsPage from "@/pages/EventsPage";
 import FoundationPage from "@/pages/FoundationPage";
-import ModulePlaceholderPage from "@/pages/ModulePlaceholderPage";
+import LoginPage from "@/pages/LoginPage";
 import NotFoundPage from "@/pages/NotFoundPage";
+import SettingsPage from "@/pages/SettingsPage";
+import EventAnnouncementsPage from "@/pages/event/EventAnnouncementsPage";
+import EventCopilotPage from "@/pages/event/EventCopilotPage";
+import EventDocumentsPage from "@/pages/event/EventDocumentsPage";
+import EventMeetingsPage from "@/pages/event/EventMeetingsPage";
+import EventOverviewPage from "@/pages/event/EventOverviewPage";
+import EventRisksPage from "@/pages/event/EventRisksPage";
+import EventTasksPage from "@/pages/event/EventTasksPage";
+import EventVolunteersPage from "@/pages/event/EventVolunteersPage";
 
-/** Short descriptions used by placeholder module routes. */
-const MODULE_DESCRIPTIONS: Record<string, string> = {
-  dashboard: "Operational overview of events, readiness and outstanding work.",
-  events: "Plan, schedule and track every club event from draft to debrief.",
-  tasks: "Assign, prioritise and monitor operational tasks across teams.",
-  volunteers: "Manage volunteer rosters, availability and shift coverage.",
-  meetings: "Agendas, minutes and follow-up actions for committee meetings.",
-  documents: "Central library for policies, permits and event paperwork.",
-  risks: "Log, assess and mitigate operational and compliance risks.",
-  announcements: "Publish updates to members, volunteers and stakeholders.",
-  copilot: "Conversational assistance over your club's operational data.",
-};
-
+/**
+ * /login is public. Everything inside AppLayout sits behind ProtectedRoute,
+ * which preserves the requested location for post-login return.
+ */
 export function AppRoutes() {
   return (
     <Routes>
-      <Route element={<AppShell />}>
-        <Route path="/foundation" element={<FoundationPage />} />
-        {NAV_ITEMS.map((item) => (
-          <Route
-            key={item.id}
-            path={item.to}
-            element={
-              <ModulePlaceholderPage
-                title={item.label}
-                description={MODULE_DESCRIPTIONS[item.id] ?? ""}
-                icon={item.icon}
-              />
-            }
-          />
-        ))}
-        <Route path="*" element={<NotFoundPage />} />
+      <Route path="/login" element={<LoginPage />} />
+
+      <Route element={<ProtectedRoute />}>
+        <Route element={<AppLayout />}>
+          <Route index element={<Navigate to="/dashboard" replace />} />
+          <Route path="dashboard" element={<DashboardPage />} />
+
+          <Route path="events" element={<EventsPage />} />
+          <Route path="events/:eventId" element={<EventLayout />}>
+            <Route index element={<EventOverviewPage />} />
+            <Route path="tasks" element={<EventTasksPage />} />
+            <Route path="volunteers" element={<EventVolunteersPage />} />
+            <Route path="meetings" element={<EventMeetingsPage />} />
+            <Route path="documents" element={<EventDocumentsPage />} />
+            <Route path="risks" element={<EventRisksPage />} />
+            <Route path="announcements" element={<EventAnnouncementsPage />} />
+            <Route path="ai" element={<EventCopilotPage />} />
+            <Route path="*" element={<NotFoundPage />} />
+          </Route>
+
+          <Route path="settings" element={<SettingsPage />} />
+          <Route path="foundation" element={<FoundationPage />} />
+
+          <Route path="404" element={<NotFoundPage />} />
+          <Route path="*" element={<NotFoundPage />} />
+        </Route>
       </Route>
     </Routes>
   );

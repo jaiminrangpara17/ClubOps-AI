@@ -13,6 +13,27 @@ export type { BadgeProps, BadgeVariant, StatusBadgeProps } from "./Badge";
 export { PageHeader } from "./PageHeader";
 export type { PageHeaderProps } from "./PageHeader";
 
+export { Breadcrumb } from "./Breadcrumb";
+export type { BreadcrumbProps } from "./Breadcrumb";
+
+export {
+  Dropdown,
+  DropdownItem,
+  DropdownLabel,
+  DropdownSection,
+  DropdownSeparator,
+} from "./Dropdown";
+export type { DropdownProps, DropdownItemProps } from "./Dropdown";
+
+export { Avatar, getInitials } from "./Avatar";
+export type { AvatarProps, AvatarSize } from "./Avatar";
+
+export { Progress } from "./Progress";
+export type { ProgressProps } from "./Progress";
+
+export { StatCard } from "./StatCard";
+export type { StatCardProps } from "./StatCard";
+
 export { LoadingState, Spinner, Skeleton } from "./LoadingState";
 export type { LoadingStateProps, SpinnerProps } from "./LoadingState";
 

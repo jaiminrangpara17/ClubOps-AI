@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { SidebarContent } from "./Sidebar";
 import { cn } from "@/lib/cn";
 import { useLockBodyScroll } from "@/hooks/useLockBodyScroll";
@@ -10,27 +10,35 @@ export interface MobileSidebarProps {
 
 /** Off-canvas navigation drawer used below the `lg` breakpoint. */
 export function MobileSidebar({ open, onClose }: MobileSidebarProps) {
+  const panelRef = useRef<HTMLDivElement>(null);
   useLockBodyScroll(open);
 
   useEffect(() => {
     if (!open) return;
+
     const onKeyDown = (event: KeyboardEvent) => {
       if (event.key === "Escape") onClose();
     };
     window.addEventListener("keydown", onKeyDown);
+
+    // Move focus into the drawer so keyboard users land in the navigation.
+    panelRef.current?.querySelector<HTMLElement>("a, button")?.focus();
+
     return () => window.removeEventListener("keydown", onKeyDown);
   }, [open, onClose]);
 
   return (
-    <div className={cn("lg:hidden", !open && "pointer-events-none")} aria-hidden={!open}>
+    <div className="lg:hidden" inert={!open}>
       <div
         onClick={onClose}
+        aria-hidden
         className={cn(
           "fixed inset-0 z-40 bg-slate-950/50 transition-opacity duration-200",
-          open ? "opacity-100" : "opacity-0",
+          open ? "opacity-100" : "pointer-events-none opacity-0",
         )}
       />
       <div
+        ref={panelRef}
         role="dialog"
         aria-modal={open}
         aria-label="Navigation"

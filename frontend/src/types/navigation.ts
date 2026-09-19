@@ -1,14 +1,29 @@
 import type { IconComponent } from "./ui";
 
-export interface NavItem {
-  /** Stable identifier, also used as React key. */
-  id: string;
+export type NavSectionId = "workspace" | "operations" | "intelligence" | "system";
+
+export interface NavSection {
+  id: NavSectionId;
   label: string;
-  /** Router path. Placeholder routes are allowed during the foundation phase. */
-  to: string;
-  icon: IconComponent;
-  /** Grouping label rendered as a section heading in the sidebar. */
-  section: NavSection;
 }
 
-export type NavSection = "Operations" | "Program" | "Governance" | "Intelligence";
+/**
+ * A navigation destination.
+ * - `global` items have an absolute path (`/dashboard`).
+ * - `event` items are resolved against the current event
+ *   (`/events/:eventId/<path>`); an empty path is the event overview.
+ */
+export interface NavItemConfig {
+  id: string;
+  label: string;
+  description: string;
+  icon: IconComponent;
+  scope: "global" | "event";
+  path: string;
+  section?: NavSectionId;
+}
+
+export interface BreadcrumbItem {
+  label: string;
+  to?: string;
+}

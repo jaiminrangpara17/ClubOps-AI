@@ -1,4 +1,4 @@
-import type { StatusKind, Tone } from "@/types";
+import type { Severity, StatusKind, Tone } from "@/types";
 
 interface StatusDefinition {
   label: string;
@@ -22,3 +22,16 @@ export const STATUS_DEFINITIONS: Record<StatusKind, StatusDefinition> = {
 export function getStatusDefinition(status: StatusKind): StatusDefinition {
   return STATUS_DEFINITIONS[status];
 }
+
+/** Severity/priority mapped onto the shared tone scale. */
+export const SEVERITY_TONE: Record<Severity, Tone> = {
+  high: "danger",
+  medium: "warning",
+  low: "neutral",
+};
+
+export const SEVERITY_LABEL: Record<Severity, string> = {
+  high: "High",
+  medium: "Medium",
+  low: "Low",
+};

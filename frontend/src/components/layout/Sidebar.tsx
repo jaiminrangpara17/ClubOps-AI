@@ -1,56 +1,34 @@
-import { LifeBuoy, Palette, Settings, X } from "lucide-react";
-import { NavLink } from "react-router-dom";
+import { LifeBuoy, Palette, X } from "lucide-react";
+import { Link, useLocation } from "react-router-dom";
 import { Logo } from "./Logo";
+import { NavItem } from "./NavItem";
 import { cn } from "@/lib/cn";
-import { NAV_SECTION_ORDER, getNavItemsBySection } from "@/lib/navigation";
-import type { NavItem } from "@/types";
+import { useEventContext } from "@/context/EventContext";
+import { NAV_SECTIONS, getNavItemsBySection, isNavItemActive, resolveNavPath } from "@/lib/navigation";
+import { getStatusDefinition } from "@/lib/status";
 
-const LINK_BASE =
-  "group flex items-center gap-3 rounded-control px-3 py-2 text-sm font-medium transition-colors duration-150";
-
-function SidebarLink({ item, onNavigate }: { item: NavItem; onNavigate?: () => void }) {
-  const Icon = item.icon;
-  return (
-    <NavLink
-      to={item.to}
-      end={item.to === "/"}
-      onClick={onNavigate}
-      className={({ isActive }) =>
-        cn(
-          LINK_BASE,
-          isActive
-            ? "bg-brand text-white shadow-xs"
-            : "text-nav-fg-muted hover:bg-white/5 hover:text-nav-fg",
-        )
-      }
-    >
-      {({ isActive }) => (
-        <>
-          <Icon
-            width={17}
-            height={17}
-            aria-hidden
-            className={cn("shrink-0", isActive ? "text-white" : "text-nav-fg-muted")}
-          />
-          <span className="truncate">{item.label}</span>
-        </>
-      )}
-    </NavLink>
-  );
-}
+const FOOTER_LINK =
+  "flex items-center gap-3 rounded-control px-3 py-2 text-sm font-medium text-nav-fg-muted transition-colors hover:bg-white/5 hover:text-nav-fg";
 
 export interface SidebarProps {
-  /** Called after a navigation item is chosen (used to close the mobile drawer). */
+  /** Called after a destination is chosen (closes the mobile drawer). */
   onNavigate?: () => void;
   /** Renders the close control (mobile drawer only). */
   onClose?: () => void;
 }
 
+/** Shared sidebar body — rendered both in the fixed rail and the drawer. */
 export function SidebarContent({ onNavigate, onClose }: SidebarProps) {
+  const { pathname } = useLocation();
+  const { currentEvent, currentEventId } = useEventContext();
+  const status = getStatusDefinition(currentEvent.status);
+
   return (
     <div className="flex h-full flex-col bg-nav">
       <div className="flex h-15 shrink-0 items-center justify-between border-b border-nav-line px-4">
-        <Logo />
+        <Link to="/dashboard" onClick={onNavigate} className="rounded-control">
+          <Logo />
+        </Link>
         {onClose && (
           <button
             type="button"
@@ -63,46 +41,60 @@ export function SidebarContent({ onNavigate, onClose }: SidebarProps) {
         )}
       </div>
 
-      <nav aria-label="Main" className="scrollbar-slim flex-1 space-y-6 overflow-y-auto px-3 py-5">
-        {NAV_SECTION_ORDER.map((section) => (
-          <div key={section} className="space-y-1">
+      <div className="shrink-0 px-3 pt-4">
+        <Link
+          to={`/events/${currentEventId}`}
+          onClick={onNavigate}
+          className="block rounded-card border border-nav-line bg-white/[0.04] p-3 transition-colors hover:border-brand/40"
+        >
+          <p className="text-[10px] font-semibold tracking-wider text-nav-fg-muted uppercase">
+            Current event
+          </p>
+          <p className="mt-1 truncate text-sm font-semibold text-nav-fg">{currentEvent.name}</p>
+          <p className="mt-1 flex items-center gap-1.5 text-[11px] text-nav-fg-muted">
+            <span
+              aria-hidden
+              className={cn(
+                "h-1.5 w-1.5 rounded-full",
+                status.tone === "success"
+                  ? "bg-success"
+                  : status.tone === "warning"
+                    ? "bg-warning"
+                    : status.tone === "danger"
+                      ? "bg-danger"
+                      : "bg-brand-400",
+              )}
+            />
+            {status.label} · {currentEvent.code}
+          </p>
+        </Link>
+      </div>
+
+      <nav aria-label="Main" className="scrollbar-slim flex-1 space-y-5 overflow-y-auto px-3 py-4">
+        {NAV_SECTIONS.map((section) => (
+          <div key={section.id} className="space-y-1">
             <p className="px-3 pb-1 text-[11px] font-semibold tracking-wider text-nav-fg-muted/70 uppercase">
-              {section}
+              {section.label}
             </p>
-            {getNavItemsBySection(section).map((item) => (
-              <SidebarLink key={item.id} item={item} onNavigate={onNavigate} />
+            {getNavItemsBySection(section.id).map((item) => (
+              <NavItem
+                key={item.id}
+                item={item}
+                to={resolveNavPath(item, currentEventId)}
+                active={isNavItemActive(item, pathname)}
+                onNavigate={onNavigate}
+              />
             ))}
           </div>
         ))}
       </nav>
 
       <div className="shrink-0 space-y-1 border-t border-nav-line p-3">
-        <NavLink
-          to="/foundation"
-          onClick={onNavigate}
-          className={({ isActive }) =>
-            cn(
-              LINK_BASE,
-              isActive
-                ? "bg-white/10 text-nav-fg"
-                : "text-nav-fg-muted hover:bg-white/5 hover:text-nav-fg",
-            )
-          }
-        >
+        <Link to="/foundation" onClick={onNavigate} className={FOOTER_LINK}>
           <Palette width={17} height={17} aria-hidden />
           <span>Design foundation</span>
-        </NavLink>
-        <a
-          href="#settings"
-          className={cn(LINK_BASE, "text-nav-fg-muted hover:bg-white/5 hover:text-nav-fg")}
-        >
-          <Settings width={17} height={17} aria-hidden />
-          <span>Settings</span>
-        </a>
-        <a
-          href="#support"
-          className={cn(LINK_BASE, "text-nav-fg-muted hover:bg-white/5 hover:text-nav-fg")}
-        >
+        </Link>
+        <a href="#support" className={FOOTER_LINK}>
           <LifeBuoy width={17} height={17} aria-hidden />
           <span>Help &amp; support</span>
         </a>
@@ -111,11 +103,11 @@ export function SidebarContent({ onNavigate, onClose }: SidebarProps) {
   );
 }
 
-/** Fixed desktop sidebar. */
+/** Persistent desktop rail (≥ lg). */
 export function Sidebar() {
   return (
-    <aside className="hidden w-sidebar shrink-0 border-r border-nav-line lg:block">
-      <div className="fixed inset-y-0 left-0 w-sidebar">
+    <aside className="hidden w-sidebar shrink-0 lg:block">
+      <div className="fixed inset-y-0 left-0 w-sidebar border-r border-nav-line">
         <SidebarContent />
       </div>
     </aside>

@@ -1,7 +1,13 @@
-import { Bell, Menu, Moon, Search, Sun } from "lucide-react";
-import { useState } from "react";
-import { Button } from "@/components/ui";
+import { Menu, Moon, Search, Sun } from "lucide-react";
+import { EventSwitcher } from "./EventSwitcher";
+import { NotificationsMenu } from "./NotificationsMenu";
+import { UserMenu } from "./UserMenu";
+import { Dropdown } from "@/components/ui";
 import { useTheme } from "@/context/ThemeContext";
+import { cn } from "@/lib/cn";
+
+const ICON_BUTTON =
+  "flex h-9 w-9 items-center justify-center rounded-control text-fg-muted transition-colors hover:bg-surface-inset hover:text-fg";
 
 export interface TopbarProps {
   onOpenNav: () => void;
@@ -9,65 +15,69 @@ export interface TopbarProps {
 
 export function Topbar({ onOpenNav }: TopbarProps) {
   const { mode, toggleMode } = useTheme();
-  const [query, setQuery] = useState("");
+  const ThemeIcon = mode === "light" ? Moon : Sun;
 
   return (
-    <header className="sticky top-0 z-30 flex h-15 shrink-0 items-center gap-3 border-b border-line bg-surface px-4 sm:px-6">
-      <Button
-        variant="ghost"
-        size="sm"
-        iconOnly
-        leadingIcon={Menu}
-        aria-label="Open navigation"
+    <header className="sticky top-0 z-30 flex h-15 shrink-0 items-center gap-2 border-b border-line bg-surface px-3 sm:px-5">
+      <button
+        type="button"
         onClick={onOpenNav}
-        className="lg:hidden"
-      />
+        aria-label="Open navigation"
+        className={cn(ICON_BUTTON, "lg:hidden")}
+      >
+        <Menu width={18} height={18} aria-hidden />
+      </button>
 
-      <div className="relative hidden max-w-sm flex-1 items-center sm:flex">
-        <Search
-          width={15}
-          height={15}
-          aria-hidden
-          className="pointer-events-none absolute left-3 text-fg-subtle"
-        />
-        <input
-          type="search"
-          value={query}
-          onChange={(event) => setQuery(event.target.value)}
-          placeholder="Search ClubOps…"
-          aria-label="Search ClubOps"
-          className="h-9 w-full rounded-control border border-line bg-surface-inset pr-3 pl-9 text-sm text-fg placeholder:text-fg-subtle focus:border-brand focus:outline-none"
-        />
-      </div>
+      <EventSwitcher />
 
-      <div className="ml-auto flex items-center gap-1.5">
-        <Button
-          variant="ghost"
-          size="sm"
-          iconOnly
-          leadingIcon={mode === "light" ? Moon : Sun}
-          aria-label={mode === "light" ? "Switch to dark theme" : "Switch to light theme"}
+      <div className="ml-auto flex items-center gap-1">
+        <Dropdown
+          align="end"
+          panelWidth="w-72"
+          label="Search"
+          role="dialog"
+          className="hidden md:block"
+          trigger={({ open, toggle }) => (
+            <button
+              type="button"
+              onClick={toggle}
+              aria-expanded={open}
+              aria-haspopup="dialog"
+              className={cn(
+                "flex h-9 w-56 items-center gap-2 rounded-control border border-line bg-surface-inset px-3 text-sm text-fg-subtle transition-colors hover:border-line-strong lg:w-64",
+                open && "border-line-strong",
+              )}
+            >
+              <Search width={15} height={15} aria-hidden />
+              <span className="flex-1 text-left">Search…</span>
+              <kbd className="rounded border border-line bg-surface px-1.5 py-0.5 font-mono text-[10px] text-fg-subtle">
+                ⌘K
+              </kbd>
+            </button>
+          )}
+        >
+          <div className="px-3 py-3">
+            <p className="text-sm font-medium text-fg">Global search</p>
+            <p className="mt-1 text-xs text-fg-muted">
+              Cross-module search over events, tasks, volunteers and documents is part of a later
+              release.
+            </p>
+          </div>
+        </Dropdown>
+
+        <button
+          type="button"
           onClick={toggleMode}
-        />
-        <Button
-          variant="ghost"
-          size="sm"
-          iconOnly
-          leadingIcon={Bell}
-          aria-label="Notifications"
-          className="hidden sm:inline-flex"
-        />
-        <div className="ml-1 flex items-center gap-2.5 border-l border-line pl-3">
-          <span
-            aria-hidden
-            className="flex h-8 w-8 items-center justify-center rounded-full bg-brand-soft text-xs font-semibold text-brand-soft-fg"
-          >
-            CO
-          </span>
-          <span className="hidden flex-col leading-tight md:flex">
-            <span className="text-xs font-semibold text-fg">Club Operator</span>
-            <span className="text-[11px] text-fg-subtle">Organisation admin</span>
-          </span>
+          aria-label={mode === "light" ? "Switch to dark theme" : "Switch to light theme"}
+          className={ICON_BUTTON}
+        >
+          <ThemeIcon width={17} height={17} aria-hidden />
+        </button>
+
+        <NotificationsMenu />
+
+        <div className="ml-1 border-l border-line pl-1.5">
+          <UserMenu />
         </div>
       </div>
     </header>
