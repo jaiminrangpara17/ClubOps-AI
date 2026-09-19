@@ -15,9 +15,9 @@ REDACTED = "***REDACTED***"
 # Defence in depth: even if a secret we do not know about shows up in a provider
 # error string, these patterns scrub the common key shapes.
 _SECRET_PATTERNS: tuple[re.Pattern[str], ...] = (
-    re.compile(r"sk-[A-Za-z0-9_\-]{12,}"),           # OpenAI / OpenRouter
-    re.compile(r"AIza[0-9A-Za-z_\-]{20,}"),          # Google / Gemini
-    re.compile(r"gsk_[A-Za-z0-9]{20,}"),             # Groq
+    re.compile(r"sk-[A-Za-z0-9_\-]{12,}"),  # OpenAI / OpenRouter
+    re.compile(r"AIza[0-9A-Za-z_\-]{20,}"),  # Google / Gemini
+    re.compile(r"gsk_[A-Za-z0-9]{20,}"),  # Groq
     re.compile(
         r"(?i)\b(?:api[-_ ]?key|authorization|bearer)\b\s*[:=]?\s*"
         r"[\"']?[A-Za-z0-9._\-]{12,}[\"']?"
@@ -98,3 +98,21 @@ class LLMEmptyResponseError(LLMError):
 class LLMBadRequestError(LLMError):
     status_code = 400
     default_message = "The LLM request was invalid."
+
+
+class AIValidationError(AIServiceError):
+    status_code = 422
+    default_message = "AI output validation failed."
+
+
+class SchemaValidationError(AIValidationError):
+    default_message = "AI output does not match expected schema."
+
+
+class MalformedAIOutputError(AIValidationError):
+    status_code = 400
+    default_message = "AI output is not valid JSON."
+
+
+class ActionValidationError(AIValidationError):
+    default_message = "Invalid AI action."

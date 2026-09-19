@@ -102,7 +102,7 @@ class LLMService:
         system: str | None = None,
         temperature: float | None = None,
         max_output_tokens: int | None = None,
-        timeout: float | None = None,
+        timeout: float | None = None,  # noqa: ASYNC109
     ) -> LLMResponse:
         """Send a prompt (or message list) to the LLM and return its output.
 
@@ -130,9 +130,7 @@ class LLMService:
         # NOTE: APITimeoutError subclasses APIConnectionError - order matters.
         except openai.APITimeoutError as exc:
             self._log_failure(exc)
-            raise LLMTimeoutError(
-                f"LLM request timed out after {request['timeout']}s."
-            ) from None
+            raise LLMTimeoutError(f"LLM request timed out after {request['timeout']}s.") from None
         except (openai.AuthenticationError, openai.PermissionDeniedError) as exc:
             self._log_failure(exc)
             raise LLMAuthenticationError(detail=self._sanitise(exc)) from None

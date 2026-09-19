@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import pytest
-
 from app.core.config import PROVIDER_BASE_URLS, get_settings, reset_settings
 from app.core.exceptions import ConfigurationError, redact_secrets
 
@@ -75,6 +74,4 @@ def test_api_key_is_never_exposed(monkeypatch: pytest.MonkeyPatch, configured_en
     assert configured_env not in repr(settings)
     assert configured_env not in str(settings.safe_summary())
     assert settings.safe_summary()["api_key_configured"] is True
-    assert configured_env not in redact_secrets(
-        f"boom: {configured_env}", settings.secret_values()
-    )
+    assert configured_env not in redact_secrets(f"boom: {configured_env}", settings.secret_values())

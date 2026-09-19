@@ -5,7 +5,6 @@ from __future__ import annotations
 from collections.abc import Iterator
 
 import pytest
-
 from app.core.config import reset_settings
 from app.core.llm import reset_llm_service
 

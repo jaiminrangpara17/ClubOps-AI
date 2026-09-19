@@ -8,7 +8,6 @@ from typing import Any
 import httpx
 import openai
 import pytest
-
 from app.core.config import get_settings, reset_settings
 from app.core.exceptions import (
     ConfigurationError,
@@ -81,7 +80,9 @@ def test_service_initialises_with_api_key(configured_env: str) -> None:
     assert service.model == "gpt-4o-mini"
 
 
-def test_client_is_built_from_settings(monkeypatch: pytest.MonkeyPatch, configured_env: str) -> None:
+def test_client_is_built_from_settings(
+    monkeypatch: pytest.MonkeyPatch, configured_env: str
+) -> None:
     captured: dict[str, Any] = {}
 
     def fake_async_openai(**kwargs: Any) -> Any:
@@ -92,7 +93,7 @@ def test_client_is_built_from_settings(monkeypatch: pytest.MonkeyPatch, configur
     monkeypatch.setenv("LLM_TIMEOUT_SECONDS", "15")
     reset_settings()
 
-    LLMService().client
+    _ = LLMService().client
 
     assert captured["api_key"] == configured_env
     assert captured["base_url"] == "https://api.openai.com/v1"
