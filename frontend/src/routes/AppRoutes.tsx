@@ -11,6 +11,9 @@ import EventAnnouncementsPage from "@/pages/event/EventAnnouncementsPage";
 import EventCopilotPage from "@/pages/event/EventCopilotPage";
 import EventDocumentsPage from "@/pages/event/EventDocumentsPage";
 import EventMeetingsPage from "@/pages/event/EventMeetingsPage";
+import MeetingCreatePage from "@/pages/event/MeetingCreatePage";
+import MeetingDetailPage from "@/pages/event/MeetingDetailPage";
+import MeetingEditPage from "@/pages/event/MeetingEditPage";
 import EventOverviewPage from "@/pages/event/EventOverviewPage";
 import EventRisksPage from "@/pages/event/EventRisksPage";
 import EventTasksPage from "@/pages/event/EventTasksPage";
@@ -42,6 +45,9 @@ export function AppRoutes() {
             <Route path="volunteers/:volunteerId" element={<VolunteerDetailPage />} />
             <Route path="volunteers/:volunteerId/edit" element={<VolunteerEditPage />} />
             <Route path="meetings" element={<EventMeetingsPage />} />
+            <Route path="meetings/new" element={<MeetingCreatePage />} />
+            <Route path="meetings/:meetingId" element={<MeetingDetailPage />} />
+            <Route path="meetings/:meetingId/edit" element={<MeetingEditPage />} />
             <Route path="documents" element={<EventDocumentsPage />} />
             <Route path="risks" element={<EventRisksPage />} />
             <Route path="announcements" element={<EventAnnouncementsPage />} />

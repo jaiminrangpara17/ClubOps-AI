@@ -40,6 +40,21 @@ export type {
   VolunteerStats,
   VolunteerWithTasks,
 } from "./volunteer";
+export type {
+  Meeting,
+  MeetingStatus,
+  MeetingProcessingStatus,
+  MeetingParticipant,
+  MeetingDecision,
+  MeetingActionItem,
+  MeetingIntelligence,
+  MeetingTranscript,
+  CreateMeetingRequest,
+  UpdateMeetingRequest,
+  MeetingsListResponse,
+  MeetingFilters,
+  MeetingStats,
+} from "./meeting";
 export { USER_ROLES } from "./auth";
 export type { User, UserRole, LoginRequest, LoginResponse, GetCurrentUserResponse } from "./auth";
 export type {
