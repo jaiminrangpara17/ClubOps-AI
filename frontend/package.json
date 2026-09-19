@@ -1,8 +1,7 @@
 {
   "name": "clubops-ai",
   "private": true,
-  "version": "1.0.0",
-  "description": "AI-Powered Event Operations Platform for Clubs & Student Organizations",
+  "version": "0.0.0",
   "type": "module",
   "scripts": {
     "dev": "vite",

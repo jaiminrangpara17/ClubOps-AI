@@ -15,6 +15,9 @@ import EventOverviewPage from "@/pages/event/EventOverviewPage";
 import EventRisksPage from "@/pages/event/EventRisksPage";
 import EventTasksPage from "@/pages/event/EventTasksPage";
 import EventVolunteersPage from "@/pages/event/EventVolunteersPage";
+import VolunteerCreatePage from "@/pages/event/VolunteerCreatePage";
+import VolunteerDetailPage from "@/pages/event/VolunteerDetailPage";
+import VolunteerEditPage from "@/pages/event/VolunteerEditPage";
 
 /**
  * /login is public. Everything inside AppLayout sits behind ProtectedRoute,
@@ -35,6 +38,9 @@ export function AppRoutes() {
             <Route index element={<EventOverviewPage />} />
             <Route path="tasks" element={<EventTasksPage />} />
             <Route path="volunteers" element={<EventVolunteersPage />} />
+            <Route path="volunteers/new" element={<VolunteerCreatePage />} />
+            <Route path="volunteers/:volunteerId" element={<VolunteerDetailPage />} />
+            <Route path="volunteers/:volunteerId/edit" element={<VolunteerEditPage />} />
             <Route path="meetings" element={<EventMeetingsPage />} />
             <Route path="documents" element={<EventDocumentsPage />} />
             <Route path="risks" element={<EventRisksPage />} />

@@ -26,6 +26,20 @@ export type {
   DeadlineState,
   EventMember,
 } from "./task";
+export type {
+  Volunteer,
+  VolunteerStatus,
+  VolunteerAvailability,
+  VolunteerWorkloadLevel,
+  VolunteerWorkloadSummary,
+  CreateVolunteerRequest,
+  UpdateVolunteerRequest,
+  VolunteersListResponse,
+  ClubMemberOption,
+  VolunteerFilters,
+  VolunteerStats,
+  VolunteerWithTasks,
+} from "./volunteer";
 export { USER_ROLES } from "./auth";
 export type { User, UserRole, LoginRequest, LoginResponse, GetCurrentUserResponse } from "./auth";
 export type {

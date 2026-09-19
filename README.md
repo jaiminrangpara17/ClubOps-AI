@@ -16,7 +16,7 @@ The repository is structured as a modular monorepo containing three core service
 
 ```text
 ClubOps-AI/
-├── 🌐 frontend/         # React 19 web application (Vite, TypeScript, Tailwind CSS v4, Task Engine)
+├── 🌐 frontend/         # React 19 web application (Vite, TypeScript, Tailwind CSS v4, Task & Volunteer Engines)
 ├── ⚙️ backend/          # Core FastAPI REST backend & PostgreSQL integration
 ├── 🧠 ai/               # AI Engine: LLM integrations, Event Planner, validators & prompts
 ├── 🐳 docker-compose.yml# PostgreSQL 16 local database development environment
@@ -30,7 +30,7 @@ ClubOps-AI/
 
 | Service | Technology | Description | Documentation |
 | :--- | :--- | :--- | :--- |
-| **Frontend** | React 19, TypeScript, Vite, Tailwind CSS v4 | Executive operations command center, modular dashboard widgets, interactive Kanban tasks, volunteer management, risk register, document vault, and AI copilot interface. | [Frontend Guide](frontend/README.md) |
+| **Frontend** | React 19, TypeScript, Vite, Tailwind CSS v4 | Executive operations command center, modular dashboard widgets, interactive Kanban tasks, volunteer roster & profile subsystem, risk register, document vault, and AI copilot interface. | [Frontend Guide](frontend/README.md) |
 | **Backend** | Python, FastAPI, Uvicorn, PostgreSQL | RESTful API endpoints for club governance, member authentication, event persistence, and operational records. | [Backend Guide](backend/README.md) |
 | **AI Engine** | Python 3.11, Pydantic, LLM Client | Domain-specific LLM intelligence for event schedule generation, action validation, automated risk detection, and daily briefings. | [AI Engine Guide](ai/README.md) |
 | **Database** | PostgreSQL 16 Alpine (Docker) | Containerized relational database for persistent club operations. | [docker-compose.yml](docker-compose.yml) |
@@ -95,18 +95,25 @@ Interactive API documentation will be available at `http://localhost:8000/docs`.
 - **Task Lifecycle & Prioritization**: Multi-tier priority system (`Critical`, `High`, `Medium`, `Low`) with deadlines and assignees.
 - **Urgent Action Queue**: Automatically bubble up blocked or overdue tasks across all active teams.
 
-### 📅 3. Event Hub & Workspaces (`/events`, `/events/:id/*`)
+### 🤝 3. Full Volunteer Management Subsystem (`/events/:id/volunteers`)
+- **Volunteer Directory & Roster**: Searchable and filterable volunteer grid and list views with status badges (`Confirmed`, `Pending`, `Unavailable`).
+- **Departmental Roles**: Dynamic classification across Stage, Registration, Logistics, Safety, Media, and Hospitality.
+- **Volunteer Profiles & Detailed Records (`/events/:id/volunteers/:volunteerId`)**: Biographies, contact records, assigned shifts/tasks, supervisor details, and emergency contacts.
+- **Create & Edit Sub-workflows (`/events/:id/volunteers/new`, `.../edit`)**: Onboard new volunteers and modify assignments with optimistic cache updates.
+- **Volunteer Analytics (`VolunteerStats.tsx`)**: Headcount analytics, status breakdowns, and departmental coverage rates.
+
+### 📅 4. Event Hub & Workspaces (`/events`, `/events/:id/*`)
 - **Event Hub (`/events`)**: Multi-event workspace with lifecycle filtering (`Planning`, `Active`, `Completed`, `On Hold`) and event creation modals.
 - **📌 Event Overview (`/events/:id`)**: High-level health index, quick navigation, and recent activity streams.
 - **✅ Tasks & Kanban Board (`/events/:id/tasks`)**: Kanban workflow (`To do`, `In progress`, `Blocked`, `Done`), search filters, priority tagging, assignees, and due dates.
-- **🛡️ Risk Register (`/events/:id/risks`)**: Risk matrix categorizing risks by severity (High, Medium, Low) and likelihood, mitigation action trackers, and AI predictive risk signals.
 - **🤝 Volunteers & Rosters (`/events/:id/volunteers`)**: Volunteer rosters, role assignment (Stage, Registration, Logistics, Safety), shift allocation, search, and status management.
+- **🛡️ Risk Register (`/events/:id/risks`)**: Risk matrix categorizing risks by severity (High, Medium, Low) and likelihood, mitigation action trackers, and AI predictive risk signals.
 - **📝 Meetings & Minutes (`/events/:id/meetings`)**: Meeting scheduler, agenda creator, attendee tracking, decisions log, and action item extractor.
 - **📁 Document Vault (`/events/:id/documents`)**: Centralized repository for permits, budget approvals, proposals, and marketing assets.
 - **📢 Announcements (`/events/:id/announcements`)**: Broadcast announcements with audience targeting and priority flags.
 - **🤖 AI Copilot (`/events/:id/ai`)**: Grounded AI conversation interface with suggested prompts, citation previews, and operational drafting tools.
 
-### 🔐 4. Authentication & RBAC (`/login`)
+### 🔐 5. Authentication & RBAC (`/login`)
 - Role-based views:
   - **Event Head**: Direct event operational control.
   - **President**: Club-wide governance and oversight.
@@ -114,7 +121,7 @@ Interactive API documentation will be available at `http://localhost:8000/docs`.
   - **Faculty Advisor**: Compliance, safety, and risk monitoring.
 - Zero-backend **Mock Development Mode** with preloaded demo profiles and one-click quick-fill buttons.
 
-### 🎨 5. Design System & Foundations (`/foundation`)
+### 🎨 6. Design System & Foundations (`/foundation`)
 - Semantic color token system (`canvas`, `surface`, `brand`, `line`, `danger`, `warning`, `success`).
 - **Dark Mode / Light Mode** theme switching with system preference detection and localStorage persistence.
 - Complete UI atomic component suite (`Button`, `Badge`, `Card`, `StatCard`, `Input`, `Dropdown`, `Breadcrumb`, `Progress`, `EmptyState`, `ErrorState`, `LoadingState`).
