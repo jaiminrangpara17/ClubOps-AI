@@ -1,390 +1,341 @@
-import { useState } from "react";
-import {
-  Bot,
-  CalendarClock,
-  Check,
-  Copy,
-  Download,
-  Flag,
-  RotateCcw,
-  ShieldAlert,
-  Sparkles,
-  X,
-} from "lucide-react";
+import { RefreshCw } from "lucide-react";
+import { useCallback } from "react";
 import { Link } from "react-router-dom";
+import {
+  AIDailyBriefPanel,
+  DashboardHeader,
+  DashboardSection,
+  EmptyDashboard,
+  EventProgressPanel,
+  OverviewStats,
+  PriorityTasks,
+  RecentActivityList,
+  RiskSummary,
+  SectionBody,
+  UpcomingDeadlines,
+  VolunteerSnapshotPanel,
+} from "@/components/dashboard";
 import { PreviewNotice } from "@/components/common/PreviewNotice";
-import { EventContextHeader } from "@/components/layout";
-import {
-  Badge,
-  Button,
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-  PageHeader,
-  StatCard,
-  StatusBadge,
-} from "@/components/ui";
+import { Badge, Button, ErrorState, PageHeader } from "@/components/ui";
+import { useAuth } from "@/context/AuthContext";
 import { useEventContext } from "@/context/EventContext";
-import {
-  DEMO_BRIEFING_POINTS,
-  DEMO_DEADLINES,
-  DEMO_PRIORITIES,
-  DEMO_RISKS,
-  DEMO_STATS,
-} from "@/data/demoDashboard";
-import { formatDueLabel } from "@/lib/format";
-import { SEVERITY_LABEL, SEVERITY_TONE } from "@/lib/status";
+import { useSectionData } from "@/hooks/useSectionData";
+import { getUserRoleLabel } from "@/lib/auth";
+import { isMockApi } from "@/services/apiMode";
+import { dashboardService } from "@/services/dashboardService";
 
-const SECTION_LINK =
-  "text-xs font-medium text-brand underline-offset-4 hover:underline";
+const SECTION_LINK = "text-xs font-medium text-brand underline-offset-4 hover:underline";
 
 export default function DashboardPage() {
-  const { currentEvent, currentEventId } = useEventContext();
-  const [isBriefingModalOpen, setIsBriefingModalOpen] = useState(false);
-  const [isGenerating, setIsGenerating] = useState(false);
-  const [briefingPoints, setBriefingPoints] = useState<string[]>(DEMO_BRIEFING_POINTS);
-  const [copied, setCopied] = useState(false);
+  const { currentEventId, hasActiveEvent } = useEventContext();
+  const { user, token } = useAuth();
 
-  const handleRefreshBriefing = () => {
-    setIsGenerating(true);
-    setTimeout(() => {
-      setBriefingPoints([
-        `Event readiness index for ${currentEvent.name} is currently holding at ${currentEvent.readiness}%.`,
-        "Volunteer coverage improved to 80% — registration and expo desks remain the two gaps.",
-        "Two documents block the finance sign-off; both sit with the venue liaison.",
-        "Day-1 morning registration staffing remains the highest priority operational risk.",
-      ]);
-      setIsGenerating(false);
-    }, 600);
-  };
+  // Each section loads independently: one failing endpoint never removes the
+  // rest of the dashboard. The auth token comes from AuthContext (Part 03).
+  const summary = useSectionData(
+    useCallback(
+      () => dashboardService.getDashboardSummary(currentEventId, token ?? ""),
+      [currentEventId, token],
+    ),
+    `summary:${currentEventId}`,
+  );
+  const priorities = useSectionData(
+    useCallback(
+      () => dashboardService.getPriorities(currentEventId, token ?? ""),
+      [currentEventId, token],
+    ),
+    `priorities:${currentEventId}`,
+  );
+  const deadlines = useSectionData(
+    useCallback(
+      () => dashboardService.getUpcomingDeadlines(currentEventId, token ?? ""),
+      [currentEventId, token],
+    ),
+    `deadlines:${currentEventId}`,
+  );
+  const risks = useSectionData(
+    useCallback(
+      () => dashboardService.getDashboardRisks(currentEventId, token ?? ""),
+      [currentEventId, token],
+    ),
+    `risks:${currentEventId}`,
+  );
+  const progress = useSectionData(
+    useCallback(
+      () => dashboardService.getEventProgress(currentEventId, token ?? ""),
+      [currentEventId, token],
+    ),
+    `progress:${currentEventId}`,
+  );
+  const volunteers = useSectionData(
+    useCallback(
+      () => dashboardService.getVolunteerSnapshot(currentEventId, token ?? ""),
+      [currentEventId, token],
+    ),
+    `volunteers:${currentEventId}`,
+  );
+  const brief = useSectionData(
+    useCallback(
+      () => dashboardService.getDailyBrief(currentEventId, token ?? ""),
+      [currentEventId, token],
+    ),
+    `brief:${currentEventId}`,
+  );
+  const activity = useSectionData(
+    useCallback(
+      () => dashboardService.getRecentActivity(currentEventId, token ?? ""),
+      [currentEventId, token],
+    ),
+    `activity:${currentEventId}`,
+  );
 
-  const handleCopyBriefing = () => {
-    const text = briefingPoints.map((p) => `• ${p}`).join("\n");
-    navigator.clipboard.writeText(text);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
-  };
+  const eventId = summary.data?.eventId ?? currentEventId;
+  const hasEvent = hasActiveEvent && summary.data?.event !== null;
+  const refreshingCount = [
+    summary,
+    priorities,
+    deadlines,
+    risks,
+    progress,
+    volunteers,
+    brief,
+    activity,
+  ].filter((section) => section.isRefreshing).length;
 
-  const handleExportSummary = () => {
-    const summaryData = {
-      event: currentEvent.name,
-      code: currentEvent.code,
-      venue: currentEvent.venue,
-      readiness: currentEvent.readiness,
-      stats: DEMO_STATS.map((s) => ({ label: s.label, value: s.value })),
-      briefing: briefingPoints,
-      exportedAt: new Date().toISOString(),
-    };
-
-    const blob = new Blob([JSON.stringify(summaryData, null, 2)], {
-      type: "application/json",
-    });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `${currentEvent.code}-operations-summary.json`;
-    a.click();
-    URL.revokeObjectURL(url);
-  };
+  const refetchAll = useCallback(() => {
+    summary.refetch();
+    priorities.refetch();
+    deadlines.refetch();
+    risks.refetch();
+    progress.refetch();
+    volunteers.refetch();
+    brief.refetch();
+    activity.refetch();
+  }, [summary, priorities, deadlines, risks, progress, volunteers, brief, activity]);
 
   return (
     <div className="space-y-6">
       <PageHeader
         eyebrow="Workspace"
-        title="Dashboard"
-        description="Overview of your club's active operations."
-        meta={<Badge tone="brand">Live Operations</Badge>}
-        actions={
+        title={user ? `Welcome back, ${user.name.split(" ")[0]}` : "Dashboard"}
+        description="Your event operations command center."
+        meta={
           <>
-            <Button
-              variant="outline"
-              leadingIcon={Download}
-              onClick={handleExportSummary}
-              title="Export operational summary as JSON"
-            >
-              Export summary
-            </Button>
-            <Button
-              leadingIcon={Sparkles}
-              onClick={() => {
-                handleRefreshBriefing();
-                setIsBriefingModalOpen(true);
-              }}
-              title="Generate comprehensive AI operational briefing"
-            >
-              Generate briefing
-            </Button>
+            {user && <Badge tone="neutral" variant="outline">{getUserRoleLabel(user.role)}</Badge>}
+            <Badge tone={isMockApi ? "warning" : "success"}>
+              {isMockApi ? "Sample data" : "Live data"}
+            </Badge>
           </>
+        }
+        actions={
+          <Button
+            variant="outline"
+            leadingIcon={RefreshCw}
+            loading={refreshingCount > 0}
+            onClick={refetchAll}
+          >
+            {refreshingCount > 0 ? `Refreshing ${refreshingCount}…` : "Refresh"}
+          </Button>
         }
       />
 
-      <EventContextHeader event={currentEvent} variant="card" />
+      {isMockApi && (
+        <PreviewNotice>
+          <span className="font-medium text-fg">Development data.</span> Dashboard endpoints are not
+          connected yet — layout, states and interactions are final, figures are sample values.
+        </PreviewNotice>
+      )}
 
-      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        {DEMO_STATS.map((stat) => (
-          <StatCard
-            key={stat.id}
-            label={stat.label}
-            value={stat.value}
-            hint={stat.hint}
-            icon={stat.icon}
-            tone={stat.tone}
-            trend={stat.trend}
-          />
-        ))}
-      </div>
+      {/* No active event */}
+      {!hasEvent && !summary.isLoading ? <EmptyDashboard /> : null}
 
-      <div className="grid gap-4 lg:grid-cols-3">
-        <div className="space-y-4 lg:col-span-2">
-          <Card>
-            <CardHeader
-              actions={
-                <Link to={`/events/${currentEventId}/tasks`} className={SECTION_LINK}>
-                  View all deadlines →
-                </Link>
-              }
-            >
-              <CardTitle className="flex items-center gap-2">
-                <CalendarClock width={15} height={15} aria-hidden className="text-fg-subtle" />
-                Upcoming deadlines
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <ul className="divide-y divide-line">
-                {DEMO_DEADLINES.map((item) => {
-                  const due = formatDueLabel(item.dueIso);
-                  return (
-                    <li
-                      key={item.id}
-                      className="flex items-center justify-between gap-3 py-3 first:pt-0 last:pb-0"
-                    >
-                      <div className="min-w-0 flex-1">
-                        <p className="truncate text-sm font-medium text-fg">{item.title}</p>
-                        <p className="text-xs text-fg-subtle">
-                          {item.module} · {item.owner}
-                        </p>
-                      </div>
-                      <div className="flex shrink-0 items-center gap-2">
-                        <span className="text-xs text-fg-muted">{due.label}</span>
-                        <StatusBadge status={item.status} size="sm" />
-                      </div>
-                    </li>
-                  );
-                })}
-              </ul>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader
-              actions={
-                <Link to={`/events/${currentEventId}/tasks`} className={SECTION_LINK}>
-                  Open tasks →
-                </Link>
-              }
-            >
-              <CardTitle className="flex items-center gap-2">
-                <Flag width={15} height={15} aria-hidden className="text-fg-subtle" />
-                Priority actions
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <ul className="divide-y divide-line">
-                {DEMO_PRIORITIES.map((priority) => (
-                  <li
-                    key={priority.id}
-                    className="flex items-center justify-between gap-3 py-3 first:pt-0 last:pb-0"
-                  >
-                    <div className="min-w-0 flex-1">
-                      <p className="truncate text-sm font-medium text-fg">{priority.title}</p>
-                      <p className="text-xs text-fg-subtle">
-                        {priority.context} · {priority.owner}
-                      </p>
-                    </div>
-                    <Badge
-                      tone={
-                        priority.priority === "high"
-                          ? "danger"
-                          : priority.priority === "medium"
-                          ? "warning"
-                          : "neutral"
-                      }
-                      size="sm"
-                    >
-                      {priority.priority}
-                    </Badge>
-                  </li>
-                ))}
-              </ul>
-            </CardContent>
-          </Card>
-        </div>
-
-        <div className="space-y-4">
-          <Card>
-            <CardHeader
-              actions={
-                <Link to={`/events/${currentEventId}/risks`} className={SECTION_LINK}>
-                  Risk register →
-                </Link>
-              }
-            >
-              <CardTitle className="flex items-center gap-2">
-                <ShieldAlert width={15} height={15} aria-hidden className="text-fg-subtle" />
-                Critical risks
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <ul className="divide-y divide-line">
-                {DEMO_RISKS.map((risk) => (
-                  <li key={risk.id} className="py-2.5 first:pt-0 last:pb-0">
-                    <div className="flex items-center justify-between gap-2">
-                      <span className="truncate text-sm font-medium text-fg">{risk.title}</span>
-                      <Badge tone={SEVERITY_TONE[risk.severity]} dot size="sm">
-                        {SEVERITY_LABEL[risk.severity]}
-                      </Badge>
-                    </div>
-                    <p className="text-xs text-fg-subtle">
-                      {risk.area} · {risk.mitigation}
-                    </p>
-                  </li>
-                ))}
-              </ul>
-            </CardContent>
-          </Card>
-
-          <Card variant="subtle">
-            <CardHeader>
-              <CardTitle className="flex items-center justify-between">
-                <span className="flex items-center gap-2">
-                  <Bot width={15} height={15} aria-hidden className="text-brand" />
-                  AI Executive Briefing
-                </span>
-                <span className="relative flex h-2 w-2">
-                  <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75"></span>
-                  <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-500"></span>
-                </span>
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-xs text-fg-subtle">
-                Real-time operational summary synthesized from active modules:
-              </p>
-              <ul className="mt-3 space-y-2.5">
-                {briefingPoints.map((point, index) => (
-                  <li key={index} className="flex gap-2.5 text-xs text-fg leading-relaxed">
-                    <span aria-hidden className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-brand" />
-                    <span>{point}</span>
-                  </li>
-                ))}
-              </ul>
-              <div className="mt-4 flex gap-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="flex-1"
-                  leadingIcon={Sparkles}
-                  disabled={isGenerating}
-                  onClick={handleRefreshBriefing}
+      {hasEvent && (
+        <div className="grid grid-cols-1 gap-5 lg:grid-cols-3">
+          {/* Event context */}
+          <div className="order-1 lg:order-1 lg:col-span-3">
+            {summary.data ? (
+              <DashboardHeader summary={summary.data} />
+            ) : (
+              <DashboardSection title="Event">
+                <SectionBody
+                  isLoading={summary.isLoading}
+                  error={summary.error}
+                  hasData={Boolean(summary.data)}
+                  onRetry={summary.refetch}
+                  skeletonRows={2}
                 >
-                  {isGenerating ? "Synthesizing..." : "Refresh briefing"}
-                </Button>
-                <Link to={`/events/${currentEventId}/ai`}>
-                  <Button size="sm" variant="subtle" title="Open Copilot">
-                    Chat
-                  </Button>
-                </Link>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-      </div>
+                  {null}
+                </SectionBody>
+              </DashboardSection>
+            )}
+          </div>
 
-      {/* Full AI Briefing Modal */}
-      {isBriefingModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-xs p-4">
-          <div className="w-full max-w-lg rounded-2xl border border-line bg-surface p-6 shadow-2xl animate-in fade-in zoom-in-95 duration-150">
-            <div className="flex items-center justify-between pb-3 border-b border-line">
-              <div className="flex items-center gap-2">
-                <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-brand text-white shadow-xs">
-                  <Sparkles width={16} height={16} />
-                </span>
-                <div>
-                  <h3 className="text-base font-bold text-fg">AI Executive Briefing</h3>
-                  <p className="text-xs text-fg-subtle">{currentEvent.name} ({currentEvent.code})</p>
-                </div>
-              </div>
-              <button
-                onClick={() => setIsBriefingModalOpen(false)}
-                className="text-fg-subtle hover:text-fg p-1 rounded-lg hover:bg-surface-subtle"
+          {/* Overview statistics */}
+          <div className="order-2 lg:order-2 lg:col-span-3">
+            <OverviewStats
+              eventId={summary.data?.eventId ?? null}
+              stats={summary.data?.stats ?? []}
+              isLoading={summary.isLoading}
+            />
+          </div>
+
+          {/* Today's priorities */}
+          <div className="order-3 lg:order-3 lg:col-span-2">
+            <DashboardSection
+              title="Today's priorities"
+              action={
+                <Link to={`/events/${eventId}/tasks`} className={SECTION_LINK}>
+                  All tasks
+                </Link>
+              }
+            >
+              <SectionBody
+                isLoading={priorities.isLoading}
+                error={priorities.error}
+                hasData={Boolean(priorities.data)}
+                onRetry={priorities.refetch}
+                skeletonRows={4}
               >
-                <X width={18} height={18} />
-              </button>
-            </div>
+                {priorities.data && (
+                  <PriorityTasks eventId={eventId} priorities={priorities.data} />
+                )}
+              </SectionBody>
+            </DashboardSection>
+          </div>
 
-            <div className="mt-4 space-y-4 text-xs">
-              <div className="rounded-xl border border-line bg-surface-subtle p-3.5 space-y-2">
-                <div className="flex items-center justify-between text-xs font-semibold text-fg">
-                  <span>Current Readiness Assessment</span>
-                  <span className="text-emerald-600 font-bold">{currentEvent.readiness}% Target</span>
-                </div>
-                <p className="text-fg-muted leading-relaxed">
-                  Preparation is advancing steadily. Active bottleneck analysis indicates venue certification and registration desk staffing require coordinator attention within 48 hours.
-                </p>
-              </div>
+          {/* Active risks */}
+          <div className="order-4 lg:order-5 lg:col-span-1">
+            <DashboardSection
+              title="Active risks"
+              action={
+                <Link to={`/events/${eventId}/risks`} className={SECTION_LINK}>
+                  All risks
+                </Link>
+              }
+            >
+              <SectionBody
+                isLoading={risks.isLoading}
+                error={risks.error}
+                hasData={Boolean(risks.data)}
+                onRetry={risks.refetch}
+                skeletonRows={3}
+              >
+                {risks.data && <RiskSummary eventId={eventId} risks={risks.data} />}
+              </SectionBody>
+            </DashboardSection>
+          </div>
 
-              <div className="space-y-2">
-                <h4 className="font-semibold text-fg text-xs uppercase tracking-wider text-fg-subtle">
-                  Synthesized Operational Bulletins
-                </h4>
-                <ul className="space-y-2">
-                  {briefingPoints.map((point, idx) => (
-                    <li
-                      key={idx}
-                      className="flex items-start gap-2.5 rounded-lg border border-line/60 bg-surface p-2.5 text-xs text-fg shadow-2xs"
-                    >
-                      <span className="mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-brand-soft text-[10px] font-bold text-brand">
-                        {idx + 1}
-                      </span>
-                      <span className="leading-snug">{point}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
+          {/* Upcoming deadlines */}
+          <div className="order-5 lg:order-6 lg:col-span-1">
+            <DashboardSection
+              title="Upcoming deadlines"
+              action={
+                <Link to={`/events/${eventId}/tasks`} className={SECTION_LINK}>
+                  Calendar
+                </Link>
+              }
+            >
+              <SectionBody
+                isLoading={deadlines.isLoading}
+                error={deadlines.error}
+                hasData={Boolean(deadlines.data)}
+                onRetry={deadlines.refetch}
+                skeletonRows={4}
+              >
+                {deadlines.data && (
+                  <UpcomingDeadlines eventId={eventId} deadlines={deadlines.data} />
+                )}
+              </SectionBody>
+            </DashboardSection>
+          </div>
 
-              <div className="flex items-center justify-between pt-3 border-t border-line mt-6">
-                <button
-                  onClick={handleCopyBriefing}
-                  className="inline-flex items-center gap-1.5 text-xs font-medium text-fg-muted hover:text-fg transition-colors"
-                >
-                  {copied ? (
-                    <>
-                      <Check width={14} height={14} className="text-emerald-500" />
-                      <span className="text-emerald-600 font-semibold">Copied to clipboard</span>
-                    </>
-                  ) : (
-                    <>
-                      <Copy width={14} height={14} />
-                      <span>Copy Briefing</span>
-                    </>
-                  )}
-                </button>
+          {/* Event progress */}
+          <div className="order-6 lg:order-7 lg:col-span-1">
+            <DashboardSection title="Event progress">
+              <SectionBody
+                isLoading={progress.isLoading}
+                error={progress.error}
+                hasData={Boolean(progress.data)}
+                onRetry={progress.refetch}
+                skeletonRows={4}
+              >
+                {progress.data && <EventProgressPanel eventId={eventId} progress={progress.data} />}
+              </SectionBody>
+            </DashboardSection>
+          </div>
 
-                <div className="flex items-center gap-2">
-                  <Link to={`/events/${currentEventId}/ai`}>
-                    <Button size="sm" variant="outline" onClick={() => setIsBriefingModalOpen(false)}>
-                      Open in Copilot
-                    </Button>
-                  </Link>
-                  <Button size="sm" onClick={() => setIsBriefingModalOpen(false)}>
-                    Done
-                  </Button>
-                </div>
-              </div>
-            </div>
+          {/* Volunteer snapshot */}
+          <div className="order-7 lg:order-8 lg:col-span-1">
+            <DashboardSection
+              title="Volunteer snapshot"
+              action={
+                <Link to={`/events/${eventId}/volunteers`} className={SECTION_LINK}>
+                  Roster
+                </Link>
+              }
+            >
+              <SectionBody
+                isLoading={volunteers.isLoading}
+                error={volunteers.error}
+                hasData={Boolean(volunteers.data)}
+                onRetry={volunteers.refetch}
+                skeletonRows={5}
+              >
+                {volunteers.data && (
+                  <VolunteerSnapshotPanel eventId={eventId} snapshot={volunteers.data} />
+                )}
+              </SectionBody>
+            </DashboardSection>
+          </div>
+
+          {/* AI daily brief */}
+          <div className="order-8 lg:order-4 lg:col-span-1">
+            <DashboardSection title="AI daily brief">
+              <SectionBody
+                isLoading={brief.isLoading}
+                error={brief.error}
+                hasData={Boolean(brief.data)}
+                onRetry={brief.refetch}
+                skeletonRows={5}
+              >
+                {brief.data && (
+                  <AIDailyBriefPanel
+                    eventId={eventId}
+                    brief={brief.data}
+                    isMockData={isMockApi}
+                  />
+                )}
+              </SectionBody>
+            </DashboardSection>
+          </div>
+
+          {/* Recent activity */}
+          <div className="order-9 lg:order-9 lg:col-span-2">
+            <DashboardSection title="Recent activity">
+              <SectionBody
+                isLoading={activity.isLoading}
+                error={activity.error}
+                hasData={Boolean(activity.data)}
+                onRetry={activity.refetch}
+                skeletonRows={4}
+              >
+                {activity.data && (
+                  <RecentActivityList eventId={eventId} activity={activity.data} />
+                )}
+              </SectionBody>
+            </DashboardSection>
           </div>
         </div>
+      )}
+
+      {/* Soft failure banner: some sections degraded but data is still shown */}
+      {hasEvent && !summary.isLoading && !priorities.isLoading && priorities.error && (
+        <ErrorState
+          variant="inline"
+          title="Some sections could not be refreshed"
+          description="The dashboard is showing the last successfully loaded data."
+          onRetry={refetchAll}
+        />
       )}
     </div>
   );

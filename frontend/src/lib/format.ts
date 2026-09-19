@@ -53,3 +53,65 @@ export function formatCountdown(iso: string): string {
   if (days === 1) return "Starts tomorrow";
   return `Starts in ${days} days`;
 }
+
+/* ------------------------------------------------------------------ */
+/* Due-date bucketing                                                  */
+/*                                                                     */
+/* The single place that classifies a deadline relative to today.       */
+/* Components must never compare date strings or reimplement this.      */
+/* ------------------------------------------------------------------ */
+
+export type DueBucket = "overdue" | "today" | "tomorrow" | "due-soon" | "future";
+
+/** Days from today that still counts as "due soon". */
+const DUE_SOON_WINDOW_DAYS = 7;
+
+/** Classifies a deadline using real Date arithmetic (never string compare). */
+export function dueBucket(iso: string, now: Date = new Date()): DueBucket {
+  const target = new Date(iso);
+  if (Number.isNaN(target.getTime())) return "future";
+
+  const startOfDay = (date: Date) => {
+    const copy = new Date(date);
+    copy.setHours(0, 0, 0, 0);
+    return copy.getTime();
+  };
+
+  const diffDays = Math.round(
+    (startOfDay(target) - startOfDay(now)) / MS_PER_DAY,
+  );
+
+  if (diffDays < 0) return "overdue";
+  if (diffDays === 0) return "today";
+  if (diffDays === 1) return "tomorrow";
+  if (diffDays <= DUE_SOON_WINDOW_DAYS) return "due-soon";
+  return "future";
+}
+
+const SHORT_DAY_MONTH = new Intl.DateTimeFormat("en-GB", {
+  day: "numeric",
+  month: "short",
+});
+
+/** Short uppercase bucket heading, e.g. "TODAY", "TOMORROW", "25 SEP". */
+export function dueBucketHeading(iso: string, now: Date = new Date()): string {
+  switch (dueBucket(iso, now)) {
+    case "overdue":
+      return "OVERDUE";
+    case "today":
+      return "TODAY";
+    case "tomorrow":
+      return "TOMORROW";
+    default:
+      return SHORT_DAY_MONTH.format(new Date(iso)).toUpperCase();
+  }
+}
+
+/** Sort order for deadlines: most urgent first, undated last. */
+export function compareByDueDate(a: string, b: string): number {
+  const timeA = Date.parse(a);
+  const timeB = Date.parse(b);
+  const safeA = Number.isNaN(timeA) ? Number.POSITIVE_INFINITY : timeA;
+  const safeB = Number.isNaN(timeB) ? Number.POSITIVE_INFINITY : timeB;
+  return safeA - safeB;
+}

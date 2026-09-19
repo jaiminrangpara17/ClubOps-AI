@@ -5,10 +5,12 @@ import { DEFAULT_EVENT_ID, DEMO_EVENTS } from "@/data/demoEvents";
 import type { ClubEvent } from "@/types";
 
 interface EventContextValue {
-  /** Events available to the workspace (preview data for now). */
+  /** Events available to the workspace. Empty when none exist. */
   events: ClubEvent[];
   currentEvent: ClubEvent;
   currentEventId: string;
+  /** True when the workspace has at least one event to operate on. */
+  hasActiveEvent: boolean;
   selectEvent: (eventId: string) => void;
   findEvent: (eventId: string | undefined) => ClubEvent | undefined;
   /** True while the shell runs on temporary preview content. */
@@ -18,13 +20,33 @@ interface EventContextValue {
 const EventContext = createContext<EventContextValue | null>(null);
 
 /**
+ * Neutral fallback so the shell keeps rendering even when a workspace has no
+ * events at all — the dashboard shows its empty state instead of crashing.
+ */
+const NO_EVENT: ClubEvent = {
+  id: "",
+  name: "No event selected",
+  code: "—",
+  status: "draft",
+  startIso: new Date().toISOString(),
+  endIso: new Date().toISOString(),
+  venue: "—",
+  summary: "No event is currently active in this workspace.",
+  attendeesExpected: 0,
+  teamSize: 0,
+  readiness: 0,
+};
+
+/**
  * Holds the event the workspace is currently operating on.
  * The selection follows `/events/:eventId` routes so the sidebar, topbar and
  * breadcrumbs always agree with the URL.
  */
 export function EventProvider({ children }: { children: ReactNode }) {
   const events = DEMO_EVENTS;
-  const [selectedId, setSelectedId] = useState<string>(DEFAULT_EVENT_ID);
+  const [selectedId, setSelectedId] = useState<string>(
+    events.length > 0 ? DEFAULT_EVENT_ID : NO_EVENT.id,
+  );
 
   const exactMatch = useMatch("/events/:eventId");
   const nestedMatch = useMatch("/events/:eventId/*");
@@ -42,11 +64,12 @@ export function EventProvider({ children }: { children: ReactNode }) {
   );
 
   const value = useMemo<EventContextValue>(() => {
-    const currentEvent = events.find((event) => event.id === selectedId) ?? events[0]!;
+    const currentEvent = events.find((event) => event.id === selectedId) ?? events[0] ?? NO_EVENT;
     return {
       events,
       currentEvent,
       currentEventId: currentEvent.id,
+      hasActiveEvent: events.length > 0,
       selectEvent: setSelectedId,
       findEvent,
       isPreviewData: true,

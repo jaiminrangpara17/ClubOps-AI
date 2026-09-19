@@ -1,4 +1,5 @@
 import { apiRequest, ApiError } from "./http";
+import { isMockApi } from "./apiMode";
 import type { GetCurrentUserResponse, LoginRequest, LoginResponse, User } from "@/types";
 
 /**
@@ -9,9 +10,8 @@ import type { GetCurrentUserResponse, LoginRequest, LoginResponse, User } from "
  *   POST /auth/logout  (Bearer)                     → 204
  *   GET  /auth/me      (Bearer)                     → GetCurrentUserResponse
  *
- * Selection:  VITE_AUTH_MODE=api  → real HTTP implementation
- *             otherwise           → LOCAL_DEVELOPMENT mock below (delete once
- *                                     the backend is available).
+ * Selection is centralised in apiMode.ts: VITE_API_MODE=api → real HTTP,
+ * otherwise the LOCAL_DEVELOPMENT mock below is used.
  */
 export interface AuthService {
   login(request: LoginRequest): Promise<LoginResponse>;
@@ -131,10 +131,9 @@ const mockAuthService: AuthService = {
 
 /* ------------------------------------------------------------------ */
 
-export const authService: AuthService =
-  import.meta.env.VITE_AUTH_MODE === "api" ? httpAuthService : mockAuthService;
+export const authService: AuthService = isMockApi ? mockAuthService : httpAuthService;
 
-export const isDevAuthMode = import.meta.env.VITE_AUTH_MODE !== "api";
+export const isDevAuthMode = isMockApi;
 
 /** Maps any thrown value to a message that is safe to show to end users. */
 export function describeAuthError(error: unknown): string {

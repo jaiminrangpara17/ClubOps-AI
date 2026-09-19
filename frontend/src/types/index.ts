@@ -1,13 +1,28 @@
 export type { IconComponent, ControlSize, Tone, StatusKind, ThemeMode } from "./ui";
 export type { NavItemConfig, NavSection, NavSectionId, BreadcrumbItem } from "./navigation";
-export type { ClubEvent } from "./event";
 export type {
-  Severity,
-  PreviewStat,
-  PreviewDeadline,
-  PreviewPriority,
-  PreviewRisk,
-  PreviewNotification,
-} from "./preview";
+  ClubEvent,
+  Event,
+  CreateEventRequest,
+  UpdateEventRequest,
+  ListEvent,
+  EventsListResponse,
+  EventStatus,
+  EventFilter,
+} from "./event";
+export type { Severity } from "./ui";
 export { USER_ROLES } from "./auth";
 export type { User, UserRole, LoginRequest, LoginResponse, GetCurrentUserResponse } from "./auth";
+export type {
+  DashboardModuleId,
+  DashboardStat,
+  DashboardSummary,
+  PriorityItem,
+  UpcomingDeadline,
+  DashboardRisk,
+  EventProgress,
+  VolunteerWorkload,
+  VolunteerSnapshot,
+  AIDailyBrief,
+  RecentActivityItem,
+} from "./dashboard";

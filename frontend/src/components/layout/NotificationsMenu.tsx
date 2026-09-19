@@ -1,6 +1,6 @@
 import { Bell } from "lucide-react";
 import { Badge, Dropdown, DropdownLabel, DropdownSeparator } from "@/components/ui";
-import { DEMO_NOTIFICATIONS } from "@/data/demoDashboard";
+import { DEMO_NOTIFICATIONS } from "@/data/demoNotifications";
 import { cn } from "@/lib/cn";
 
 const DOT_TONES = {

@@ -9,6 +9,9 @@ export type ControlSize = "sm" | "md" | "lg";
 /** Semantic meaning applied to badges, statuses and feedback surfaces. */
 export type Tone = "neutral" | "brand" | "success" | "warning" | "danger" | "info";
 
+/** Generic priority/severity scale shared by priorities, risks and coverage. */
+export type Severity = "high" | "medium" | "low";
+
 /** Operational status vocabulary shared by future ClubOps modules. */
 export type StatusKind =
   | "draft"

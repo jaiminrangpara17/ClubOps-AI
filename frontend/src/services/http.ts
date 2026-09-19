@@ -27,6 +27,30 @@ export class ApiError extends Error {
 /** Broadcast when any request is rejected with 401 so the app can re-authenticate. */
 export const UNAUTHORIZED_EVENT = "clubops:unauthorized";
 
+/**
+ * Maps any thrown value to a message that is safe to show to end users.
+ * Never surfaces stack traces, URLs or internal API details.
+ */
+export function describeApiError(error: unknown, fallback: string): string {
+  if (error instanceof ApiError) {
+    switch (error.kind) {
+      case "unauthorized":
+        return "Your session has expired. Please sign in again.";
+      case "forbidden":
+        return "You do not have permission to view this data.";
+      case "not-found":
+        return "This data is not available.";
+      case "network":
+        return "Unable to connect to ClubOps. Please check your connection and try again.";
+      case "server":
+        return "Something went wrong on our side. Please try again in a moment.";
+      default:
+        return "We received an unexpected response. Please try again.";
+    }
+  }
+  return fallback;
+}
+
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? "/api";
 const REQUEST_TIMEOUT_MS = 12_000;
 

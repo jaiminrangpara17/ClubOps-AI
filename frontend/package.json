@@ -1,8 +1,7 @@
 {
-  "name": "clubops-ai-frontend",
+  "name": "react-vite-tailwind",
   "private": true,
-  "version": "1.0.0",
-  "description": "ClubOps AI — Frontend Application for Intelligent Event Operations & Management",
+  "version": "0.0.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
