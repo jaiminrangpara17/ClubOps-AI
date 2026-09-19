@@ -80,6 +80,8 @@ export interface DropdownItemProps {
   /** Secondary line shown under the label. */
   note?: string;
   active?: boolean;
+  /** `destructive` styles the item as a danger action. */
+  variant?: "default" | "destructive";
 }
 
 export function DropdownItem({
@@ -89,6 +91,7 @@ export function DropdownItem({
   disabled,
   note,
   active,
+  variant = "default",
 }: DropdownItemProps) {
   return (
     <button
@@ -99,10 +102,24 @@ export function DropdownItem({
       className={cn(
         "flex w-full items-start gap-2.5 rounded-control px-2.5 py-2 text-left text-sm transition-colors",
         "disabled:cursor-not-allowed disabled:opacity-55",
-        active ? "bg-brand-soft text-brand-soft-fg" : "text-fg hover:bg-surface-inset",
+        variant === "destructive"
+          ? "text-danger hover:bg-danger-soft"
+          : active
+            ? "bg-brand-soft text-brand-soft-fg"
+            : "text-fg hover:bg-surface-inset",
       )}
     >
-      {Icon && <Icon width={15} height={15} aria-hidden className="mt-0.5 shrink-0 text-fg-subtle" />}
+      {Icon && (
+        <Icon
+          width={15}
+          height={15}
+          aria-hidden
+          className={cn(
+            "mt-0.5 shrink-0",
+            variant === "destructive" ? "text-danger" : "text-fg-subtle",
+          )}
+        />
+      )}
       <span className="min-w-0 flex-1">
         <span className="block truncate">{children}</span>
         {note && <span className="mt-0.5 block text-xs text-fg-subtle">{note}</span>}

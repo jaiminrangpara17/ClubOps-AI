@@ -28,9 +28,9 @@ export function formatDateRange(startIso: string, endIso: string): string {
 }
 
 /** Whole-day difference between now and the given date. */
-export function daysUntil(iso: string): number {
+export function daysUntil(iso: string, now: Date = new Date()): number {
   const target = new Date(iso);
-  const today = new Date();
+  const today = new Date(now);
   target.setHours(0, 0, 0, 0);
   today.setHours(0, 0, 0, 0);
   return Math.round((target.getTime() - today.getTime()) / MS_PER_DAY);

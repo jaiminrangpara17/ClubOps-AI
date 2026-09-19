@@ -11,6 +11,21 @@ export type {
   EventFilter,
 } from "./event";
 export type { Severity } from "./ui";
+export type {
+  Task,
+  TaskStatus,
+  TaskPriority,
+  CreateTaskRequest,
+  UpdateTaskRequest,
+  TasksListResponse,
+  TaskStats,
+  TaskFilters,
+  TaskSort,
+  TaskSortField,
+  TaskSortDirection,
+  DeadlineState,
+  EventMember,
+} from "./task";
 export { USER_ROLES } from "./auth";
 export type { User, UserRole, LoginRequest, LoginResponse, GetCurrentUserResponse } from "./auth";
 export type {

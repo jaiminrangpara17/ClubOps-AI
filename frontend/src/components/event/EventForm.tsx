@@ -126,8 +126,6 @@ export function EventForm({
         value={formData.description}
         onChange={(e) => handleChange("description", e.target.value)}
         error={errors.description}
-        multiline
-        rows={3}
       />
 
       <div className="grid gap-4 sm:grid-cols-2">

@@ -6,7 +6,7 @@
 [![Python AI](https://img.shields.io/badge/AI_Engine-Python_3.11-3776AB?logo=python&logoColor=white)](ai/)
 [![PostgreSQL](https://img.shields.io/badge/Database-PostgreSQL_16-4169E1?logo=postgresql&logoColor=white)](docker-compose.yml)
 
-**ClubOps AI** is an end-to-end intelligent operations platform engineered to streamline event planning, volunteer coordination, risk governance, meeting documentation, and executive decision-making for collegiate clubs, student societies, and community organizations.
+**ClubOps AI** is an end-to-end intelligent operations platform engineered to streamline event planning, volunteer coordination, task execution, risk governance, meeting documentation, and executive decision-making for collegiate clubs, student societies, and community organizations.
 
 ---
 
@@ -16,7 +16,7 @@ The repository is structured as a modular monorepo containing three core service
 
 ```text
 ClubOps-AI/
-├── 🌐 frontend/         # React 19 web application (Vite, TypeScript, Tailwind CSS v4)
+├── 🌐 frontend/         # React 19 web application (Vite, TypeScript, Tailwind CSS v4, Task Engine)
 ├── ⚙️ backend/          # Core FastAPI REST backend & PostgreSQL integration
 ├── 🧠 ai/               # AI Engine: LLM integrations, Event Planner, validators & prompts
 ├── 🐳 docker-compose.yml# PostgreSQL 16 local database development environment
@@ -90,7 +90,12 @@ Interactive API documentation will be available at `http://localhost:8000/docs`.
 - **Modular Dashboard Widgets**: `AIDailyBrief`, `DashboardHeader`, `DashboardSection`, `EventProgress`, `OverviewStats`, `PriorityTasks`, `RecentActivity`, `RiskSummary`, `UpcomingDeadlines`, `VolunteerSnapshot`.
 - **Event Context Header**: Switch between active events with live readiness progress gauges.
 
-### 📅 2. Event Hub & Workspaces (`/events`, `/events/:id/*`)
+### 📋 2. Comprehensive Task Tracker (`/events/:id/tasks`)
+- **Dual-View Workflow**: Kanban boards and structured table views with real-time status and priority badges.
+- **Task Lifecycle & Prioritization**: Multi-tier priority system (`Critical`, `High`, `Medium`, `Low`) with deadlines and assignees.
+- **Urgent Action Queue**: Automatically bubble up blocked or overdue tasks across all active teams.
+
+### 📅 3. Event Hub & Workspaces (`/events`, `/events/:id/*`)
 - **Event Hub (`/events`)**: Multi-event workspace with lifecycle filtering (`Planning`, `Active`, `Completed`, `On Hold`) and event creation modals.
 - **📌 Event Overview (`/events/:id`)**: High-level health index, quick navigation, and recent activity streams.
 - **✅ Tasks & Kanban Board (`/events/:id/tasks`)**: Kanban workflow (`To do`, `In progress`, `Blocked`, `Done`), search filters, priority tagging, assignees, and due dates.
@@ -101,7 +106,7 @@ Interactive API documentation will be available at `http://localhost:8000/docs`.
 - **📢 Announcements (`/events/:id/announcements`)**: Broadcast announcements with audience targeting and priority flags.
 - **🤖 AI Copilot (`/events/:id/ai`)**: Grounded AI conversation interface with suggested prompts, citation previews, and operational drafting tools.
 
-### 🔐 3. Authentication & RBAC (`/login`)
+### 🔐 4. Authentication & RBAC (`/login`)
 - Role-based views:
   - **Event Head**: Direct event operational control.
   - **President**: Club-wide governance and oversight.
@@ -109,7 +114,7 @@ Interactive API documentation will be available at `http://localhost:8000/docs`.
   - **Faculty Advisor**: Compliance, safety, and risk monitoring.
 - Zero-backend **Mock Development Mode** with preloaded demo profiles and one-click quick-fill buttons.
 
-### 🎨 4. Design System & Foundations (`/foundation`)
+### 🎨 5. Design System & Foundations (`/foundation`)
 - Semantic color token system (`canvas`, `surface`, `brand`, `line`, `danger`, `warning`, `success`).
 - **Dark Mode / Light Mode** theme switching with system preference detection and localStorage persistence.
 - Complete UI atomic component suite (`Button`, `Badge`, `Card`, `StatCard`, `Input`, `Dropdown`, `Breadcrumb`, `Progress`, `EmptyState`, `ErrorState`, `LoadingState`).
