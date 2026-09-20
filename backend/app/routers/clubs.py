@@ -5,7 +5,9 @@ from sqlalchemy.orm import Session
 
 from app.database import get_db
 from app.models import Club
+from app.models.user import User
 from app.schemas.club import ClubCreate, ClubResponse
+from app.security import get_current_active_user, require_manager_or_admin
 
 
 router = APIRouter(
@@ -14,10 +16,12 @@ router = APIRouter(
 )
 
 
+@router.post("", response_model=ClubResponse, status_code=201)
 @router.post("/", response_model=ClubResponse, status_code=201)
 def create_club(
     club: ClubCreate,
     db: Session = Depends(get_db),
+    current_user: User = Depends(require_manager_or_admin),
 ):
     new_club = Club(
         name=club.name,
@@ -39,9 +43,11 @@ def create_club(
     return new_club
 
 
+@router.get("", response_model=list[ClubResponse])
 @router.get("/", response_model=list[ClubResponse])
 def get_clubs(
     db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_active_user),
 ):
     return db.scalars(
         select(Club).order_by(Club.id)
@@ -52,6 +58,7 @@ def get_clubs(
 def get_club(
     club_id: int,
     db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_active_user),
 ):
     club = db.get(Club, club_id)
 
@@ -65,10 +72,12 @@ def get_club(
 
 
 @router.put("/{club_id}", response_model=ClubResponse)
+@router.patch("/{club_id}", response_model=ClubResponse)
 def update_club(
     club_id: int,
     club_data: ClubCreate,
     db: Session = Depends(get_db),
+    current_user: User = Depends(require_manager_or_admin),
 ):
     club = db.get(Club, club_id)
 
@@ -98,6 +107,7 @@ def update_club(
 def delete_club(
     club_id: int,
     db: Session = Depends(get_db),
+    current_user: User = Depends(require_manager_or_admin),
 ):
     club = db.get(Club, club_id)
 

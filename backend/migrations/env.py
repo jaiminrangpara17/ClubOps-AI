@@ -7,7 +7,7 @@ from dotenv import load_dotenv
 import os
 
 from app.database import Base
-from app.models import Club, Member, Event, Attendance
+from app.models import Club, Member, Event, Attendance, User
 
 load_dotenv()
 

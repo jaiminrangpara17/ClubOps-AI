@@ -4,3 +4,8 @@ SQLAlchemy
 psycopg[binary]
 python-dotenv
 alembic
+pwdlib[argon2]
+PyJWT
+python-multipart
+pydantic[email]
+httpx

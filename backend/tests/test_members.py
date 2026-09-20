@@ -1,10 +1,11 @@
-def create_test_club(client):
+def create_test_club(client, headers):
     response = client.post(
         "/clubs/",
         json={
             "name": "Member Test Club",
             "description": "Club for member tests",
         },
+        headers=headers,
     )
 
     assert response.status_code == 201
@@ -12,15 +13,15 @@ def create_test_club(client):
     return response.json()["id"]
 
 
-def test_get_members(client):
-    response = client.get("/members/")
+def test_get_members(client, manager_headers):
+    response = client.get("/members/", headers=manager_headers)
 
     assert response.status_code == 200
     assert isinstance(response.json(), list)
 
 
-def test_create_member(client):
-    club_id = create_test_club(client)
+def test_create_member(client, manager_headers):
+    club_id = create_test_club(client, manager_headers)
 
     response = client.post(
         "/members/",
@@ -29,6 +30,7 @@ def test_create_member(client):
             "email": "member.create.test@example.com",
             "club_id": club_id,
         },
+        headers=manager_headers,
     )
 
     assert response.status_code == 201
@@ -41,8 +43,8 @@ def test_create_member(client):
     assert "id" in data
 
 
-def test_get_member(client):
-    club_id = create_test_club(client)
+def test_get_member(client, manager_headers):
+    club_id = create_test_club(client, manager_headers)
 
     response = client.post(
         "/members/",
@@ -51,21 +53,22 @@ def test_get_member(client):
             "email": "member.get.test@example.com",
             "club_id": club_id,
         },
+        headers=manager_headers,
     )
 
     assert response.status_code == 201
 
     member_id = response.json()["id"]
 
-    response = client.get(f"/members/{member_id}")
+    response = client.get(f"/members/{member_id}", headers=manager_headers)
 
     assert response.status_code == 200
     assert response.json()["id"] == member_id
     assert response.json()["name"] == "Get Member Test"
 
 
-def test_get_nonexistent_member(client):
-    response = client.get("/members/999999")
+def test_get_nonexistent_member(client, manager_headers):
+    response = client.get("/members/999999", headers=manager_headers)
 
     assert response.status_code == 404
     assert response.json() == {
@@ -73,7 +76,7 @@ def test_get_nonexistent_member(client):
     }
 
 
-def test_create_member_invalid_club(client):
+def test_create_member_invalid_club(client, manager_headers):
     response = client.post(
         "/members/",
         json={
@@ -81,6 +84,7 @@ def test_create_member_invalid_club(client):
             "email": "invalid.club.member@example.com",
             "club_id": 999999,
         },
+        headers=manager_headers,
     )
 
     assert response.status_code == 404
@@ -89,8 +93,8 @@ def test_create_member_invalid_club(client):
     }
 
 
-def test_duplicate_member_email(client):
-    club_id = create_test_club(client)
+def test_duplicate_member_email(client, manager_headers):
+    club_id = create_test_club(client, manager_headers)
 
     email = "member.duplicate.test@example.com"
 
@@ -101,6 +105,7 @@ def test_duplicate_member_email(client):
             "email": email,
             "club_id": club_id,
         },
+        headers=manager_headers,
     )
 
     assert first_response.status_code == 201
@@ -112,13 +117,14 @@ def test_duplicate_member_email(client):
             "email": email,
             "club_id": club_id,
         },
+        headers=manager_headers,
     )
 
     assert second_response.status_code == 409
 
 
-def test_update_member(client):
-    club_id = create_test_club(client)
+def test_update_member(client, manager_headers):
+    club_id = create_test_club(client, manager_headers)
 
     response = client.post(
         "/members/",
@@ -127,6 +133,7 @@ def test_update_member(client):
             "email": "member.update.test@example.com",
             "club_id": club_id,
         },
+        headers=manager_headers,
     )
 
     assert response.status_code == 201
@@ -138,6 +145,7 @@ def test_update_member(client):
         json={
             "name": "Updated Member",
         },
+        headers=manager_headers,
     )
 
     assert response.status_code == 200
@@ -148,8 +156,8 @@ def test_update_member(client):
     assert data["name"] == "Updated Member"
 
 
-def test_update_member_email(client):
-    club_id = create_test_club(client)
+def test_update_member_email(client, manager_headers):
+    club_id = create_test_club(client, manager_headers)
 
     response = client.post(
         "/members/",
@@ -158,6 +166,7 @@ def test_update_member_email(client):
             "email": "member.email.old@example.com",
             "club_id": club_id,
         },
+        headers=manager_headers,
     )
 
     assert response.status_code == 201
@@ -169,25 +178,27 @@ def test_update_member_email(client):
         json={
             "email": "member.email.new@example.com",
         },
+        headers=manager_headers,
     )
 
     assert response.status_code == 200
     assert response.json()["email"] == "member.email.new@example.com"
 
 
-def test_update_nonexistent_member(client):
+def test_update_nonexistent_member(client, manager_headers):
     response = client.put(
         "/members/999999",
         json={
             "name": "Does Not Exist",
         },
+        headers=manager_headers,
     )
 
     assert response.status_code == 404
 
 
-def test_delete_member(client):
-    club_id = create_test_club(client)
+def test_delete_member(client, manager_headers):
+    club_id = create_test_club(client, manager_headers)
 
     response = client.post(
         "/members/",
@@ -196,29 +207,30 @@ def test_delete_member(client):
             "email": "member.delete.test@example.com",
             "club_id": club_id,
         },
+        headers=manager_headers,
     )
 
     assert response.status_code == 201
 
     member_id = response.json()["id"]
 
-    response = client.delete(f"/members/{member_id}")
+    response = client.delete(f"/members/{member_id}", headers=manager_headers)
 
     assert response.status_code == 204
 
-    response = client.get(f"/members/{member_id}")
+    response = client.get(f"/members/{member_id}", headers=manager_headers)
 
     assert response.status_code == 404
 
 
-def test_delete_nonexistent_member(client):
-    response = client.delete("/members/999999")
+def test_delete_nonexistent_member(client, manager_headers):
+    response = client.delete("/members/999999", headers=manager_headers)
 
     assert response.status_code == 404
 
 
-def test_invalid_member_email(client):
-    club_id = create_test_club(client)
+def test_invalid_member_email(client, manager_headers):
+    club_id = create_test_club(client, manager_headers)
 
     response = client.post(
         "/members/",
@@ -227,13 +239,14 @@ def test_invalid_member_email(client):
             "email": "not-an-email",
             "club_id": club_id,
         },
+        headers=manager_headers,
     )
 
     assert response.status_code == 422
 
 
-def test_extra_member_fields_rejected(client):
-    club_id = create_test_club(client)
+def test_extra_member_fields_rejected(client, manager_headers):
+    club_id = create_test_club(client, manager_headers)
 
     response = client.post(
         "/members/",
@@ -243,6 +256,7 @@ def test_extra_member_fields_rejected(client):
             "club_id": club_id,
             "unexpected": "field",
         },
+        headers=manager_headers,
     )
 
     assert response.status_code == 201

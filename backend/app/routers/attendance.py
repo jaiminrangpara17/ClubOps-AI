@@ -4,11 +4,13 @@ from sqlalchemy.orm import Session
 
 from app.database import get_db
 from app.models import Attendance, Event, Member
+from app.models.user import User
 from app.schemas.attendance import (
     AttendanceCreate,
     AttendanceResponse,
     AttendanceUpdate,
 )
+from app.security import get_current_active_user, require_manager_or_admin
 
 router = APIRouter(
     prefix="/attendance",
@@ -57,10 +59,12 @@ def find_duplicate(
     return db.scalar(query)
 
 
+@router.post("", response_model=AttendanceResponse, status_code=201)
 @router.post("/", response_model=AttendanceResponse, status_code=201)
 def create_attendance(
     attendance: AttendanceCreate,
     db: Session = Depends(get_db),
+    current_user: User = Depends(require_manager_or_admin),
 ):
     ensure_member(db, attendance.member_id)
     ensure_event(db, attendance.event_id)
@@ -88,10 +92,21 @@ def create_attendance(
     return record
 
 
+@router.get("", response_model=list[AttendanceResponse])
 @router.get("/", response_model=list[AttendanceResponse])
-def get_attendance(db: Session = Depends(get_db)):
+def get_attendance(
+    member_id: int | None = None,
+    event_id: int | None = None,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_active_user),
+):
+    stmt = select(Attendance)
+    if member_id is not None:
+        stmt = stmt.where(Attendance.member_id == member_id)
+    if event_id is not None:
+        stmt = stmt.where(Attendance.event_id == event_id)
     return db.scalars(
-        select(Attendance).order_by(Attendance.id)
+        stmt.order_by(Attendance.id)
     ).all()
 
 
@@ -99,6 +114,7 @@ def get_attendance(db: Session = Depends(get_db)):
 def get_member_attendance(
     member_id: int,
     db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_active_user),
 ):
     ensure_member(db, member_id)
 
@@ -113,6 +129,7 @@ def get_member_attendance(
 def get_event_attendance(
     event_id: int,
     db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_active_user),
 ):
     ensure_event(db, event_id)
 
@@ -127,6 +144,7 @@ def get_event_attendance(
 def get_attendance_record(
     attendance_id: int,
     db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_active_user),
 ):
     record = db.get(Attendance, attendance_id)
 
@@ -140,10 +158,12 @@ def get_attendance_record(
 
 
 @router.put("/{attendance_id}", response_model=AttendanceResponse)
+@router.patch("/{attendance_id}", response_model=AttendanceResponse)
 def update_attendance(
     attendance_id: int,
     attendance_data: AttendanceUpdate,
     db: Session = Depends(get_db),
+    current_user: User = Depends(require_manager_or_admin),
 ):
     record = db.get(Attendance, attendance_id)
 
@@ -195,6 +215,7 @@ def update_attendance(
 def delete_attendance(
     attendance_id: int,
     db: Session = Depends(get_db),
+    current_user: User = Depends(require_manager_or_admin),
 ):
     record = db.get(Attendance, attendance_id)
 

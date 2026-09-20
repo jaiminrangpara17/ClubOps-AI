@@ -4,7 +4,9 @@ from sqlalchemy.orm import Session
 
 from app.database import get_db
 from app.models import Club, Event
+from app.models.user import User
 from app.schemas.event import EventCreate, EventResponse, EventUpdate
+from app.security import get_current_active_user, require_manager_or_admin
 
 
 router = APIRouter(
@@ -13,10 +15,12 @@ router = APIRouter(
 )
 
 
+@router.post("", response_model=EventResponse, status_code=201)
 @router.post("/", response_model=EventResponse, status_code=201)
 def create_event(
     event: EventCreate,
     db: Session = Depends(get_db),
+    current_user: User = Depends(require_manager_or_admin),
 ):
     club = db.get(Club, event.club_id)
 
@@ -40,12 +44,18 @@ def create_event(
     return new_event
 
 
+@router.get("", response_model=list[EventResponse])
 @router.get("/", response_model=list[EventResponse])
 def get_events(
+    club_id: int | None = None,
     db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_active_user),
 ):
+    stmt = select(Event)
+    if club_id is not None:
+        stmt = stmt.where(Event.club_id == club_id)
     return db.scalars(
-        select(Event).order_by(Event.starts_at, Event.id)
+        stmt.order_by(Event.starts_at, Event.id)
     ).all()
 
 
@@ -53,6 +63,7 @@ def get_events(
 def get_event(
     event_id: int,
     db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_active_user),
 ):
     event = db.get(Event, event_id)
 
@@ -66,10 +77,12 @@ def get_event(
 
 
 @router.put("/{event_id}", response_model=EventResponse)
+@router.patch("/{event_id}", response_model=EventResponse)
 def update_event(
     event_id: int,
     event_data: EventUpdate,
     db: Session = Depends(get_db),
+    current_user: User = Depends(require_manager_or_admin),
 ):
     event = db.get(Event, event_id)
 
@@ -109,6 +122,7 @@ def update_event(
 def delete_event(
     event_id: int,
     db: Session = Depends(get_db),
+    current_user: User = Depends(require_manager_or_admin),
 ):
     event = db.get(Event, event_id)
 
