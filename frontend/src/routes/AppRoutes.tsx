@@ -17,6 +17,9 @@ import MeetingDetailPage from "@/pages/event/MeetingDetailPage";
 import MeetingEditPage from "@/pages/event/MeetingEditPage";
 import EventOverviewPage from "@/pages/event/EventOverviewPage";
 import EventRisksPage from "@/pages/event/EventRisksPage";
+import RiskCreatePage from "@/pages/event/RiskCreatePage";
+import RiskDetailPage from "@/pages/event/RiskDetailPage";
+import RiskEditPage from "@/pages/event/RiskEditPage";
 import EventTasksPage from "@/pages/event/EventTasksPage";
 import EventVolunteersPage from "@/pages/event/EventVolunteersPage";
 import VolunteerCreatePage from "@/pages/event/VolunteerCreatePage";
@@ -52,6 +55,9 @@ export function AppRoutes() {
             <Route path="documents" element={<EventDocumentsPage />} />
             <Route path="documents/:documentId" element={<DocumentDetailPage />} />
             <Route path="risks" element={<EventRisksPage />} />
+            <Route path="risks/new" element={<RiskCreatePage />} />
+            <Route path="risks/:riskId" element={<RiskDetailPage />} />
+            <Route path="risks/:riskId/edit" element={<RiskEditPage />} />
             <Route path="announcements" element={<EventAnnouncementsPage />} />
             <Route path="ai" element={<EventCopilotPage />} />
             <Route path="*" element={<NotFoundPage />} />

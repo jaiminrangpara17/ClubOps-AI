@@ -39,9 +39,11 @@
 - **Document Detail Views**: Preview metadata, size, upload timestamp, category tags, and access permissions.
 - **Instant Search & Filter**: Search documents by title, tags, or file type with immediate preview panels.
 
-### ⚠️ 6. Risk Register & Mitigation (`/events/:id/risks`)
-- **Severity & Impact Matrix**: Categorized across `Low`, `Medium`, `High`, and `Critical`.
-- **Mitigation Action Items**: Track mitigation owners, contingency strategies, and status updates.
+### ⚠️ 6. Risk Register & Matrix Governance (`/events/:id/risks`)
+- **Severity & Likelihood Matrix**: Multi-dimensional risk matrix mapping probability against operational impact (`Low`, `Medium`, `High`, `Critical`).
+- **Interactive Risk Management**: Create (`/risks/new`), inspect (`/risks/:riskId`), and edit (`/risks/:riskId/edit`) risk profiles with optimistic state updates.
+- **Mitigation & Contingency Plans**: Dedicated mitigation action trackers, trigger indicators, assigned risk owners, and status updates.
+- **Risk Analytics**: Aggregate severity metrics, status distribution, and quick filtering by likelihood and category.
 
 ### 📢 7. Announcements & Broadcasts (`/events/:id/announcements`)
 - Target broadcasts specifically to Attendees, Volunteers, Organizers, or Sponsors.

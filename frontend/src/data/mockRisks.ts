@@ -1,0 +1,196 @@
+/**
+ * LOCAL_DEVELOPMENT mock data for risk management.
+ *
+ * ⚠️ No risk backend or AI risk detector exists. Every risk below has an
+ * explicit manual/task/meeting/document source. None are labelled as
+ * AI-detected, and no result is presented as AI intelligence.
+ */
+import { isoFromToday } from "./demoEvents";
+import type { Risk } from "@/types";
+
+const stamp = (dayOffset: number, hour = 10) => isoFromToday(dayOffset, hour);
+
+const EMPTY_REFS: Risk["references"] = {
+  taskId: null,
+  meetingId: null,
+  meetingTitle: null,
+  documentId: null,
+  documentName: null,
+  volunteerId: null,
+  volunteerName: null,
+};
+
+export const MOCK_RISKS_BY_EVENT: Record<string, Risk[]> = {
+  "techfest-2026": [
+    {
+      id: "rsk_001",
+      eventId: "techfest-2026",
+      title: "Venue contract may miss the countersign deadline",
+      description:
+        "The provider will waive the AV surcharge only if the hire agreement is countersigned by Friday.",
+      status: "open",
+      severity: "critical",
+      likelihood: "high",
+      impact: "high",
+      score: 9,
+      ownerMemberId: "usr_rahul",
+      ownerName: "Rahul Kapoor",
+      mitigation: {
+        strategy: "Obtain faculty sign-off and countersign the venue agreement before the deadline.",
+        ownerMemberId: "usr_rahul",
+        ownerName: "Rahul Kapoor",
+        dueIso: stamp(2, 17),
+        status: "In progress",
+        taskId: "tsk_001",
+        taskTitle: "Finalize venue booking",
+        taskStatus: "in_progress",
+        taskPriority: "high",
+        taskDueIso: stamp(2, 17),
+      },
+      source: "document",
+      sourceLabel: "Venue hire agreement.pdf",
+      references: {
+        ...EMPTY_REFS,
+        taskId: "tsk_001",
+        meetingId: "mtg_001",
+        meetingTitle: "Core committee sync — week 6",
+        documentId: "doc_001",
+        documentName: "Venue hire agreement.pdf",
+      },
+      allowedTransitions: ["monitoring", "mitigated", "closed"],
+      identifiedAt: stamp(-3),
+      updatedAt: stamp(-1),
+    },
+    {
+      id: "rsk_002",
+      eventId: "techfest-2026",
+      title: "Day-one registration desk is understaffed",
+      description:
+        "Five volunteer slots are still open for the morning check-in window, which may delay attendee entry.",
+      status: "monitoring",
+      severity: "high",
+      likelihood: "high",
+      impact: "medium",
+      score: 7,
+      ownerMemberId: "usr_neha",
+      ownerName: "Neha Reddy",
+      mitigation: {
+        strategy: "Reassign expo floaters to registration and recruit remaining open shift cover.",
+        ownerMemberId: "usr_neha",
+        ownerName: "Neha Reddy",
+        dueIso: stamp(3, 17),
+        status: "In progress",
+        taskId: "tsk_004",
+        taskTitle: "Assign remaining volunteers",
+        taskStatus: "blocked",
+        taskPriority: "high",
+        taskDueIso: stamp(-1, 9),
+      },
+      source: "meeting",
+      sourceLabel: "Core committee sync — week 6",
+      references: {
+        ...EMPTY_REFS,
+        taskId: "tsk_004",
+        meetingId: "mtg_001",
+        meetingTitle: "Core committee sync — week 6",
+        volunteerId: "vol_techfest-2026_6",
+        volunteerName: "Neha Reddy",
+      },
+      allowedTransitions: ["open", "mitigated", "closed"],
+      identifiedAt: stamp(-2),
+      updatedAt: stamp(-1),
+    },
+    {
+      id: "rsk_003",
+      eventId: "techfest-2026",
+      title: "Sponsor proposal may be delayed",
+      description:
+        "The final proposal requires an updated partner logo pack before it can be sent.",
+      status: "open",
+      severity: "medium",
+      likelihood: "medium",
+      impact: "medium",
+      score: 4,
+      ownerMemberId: "usr_priya",
+      ownerName: "Priya Mehta",
+      mitigation: {
+        strategy: "Collect revised logo assets and complete the tier proposal for review.",
+        ownerMemberId: "usr_priya",
+        ownerName: "Priya Mehta",
+        dueIso: stamp(3, 12),
+        status: "Planned",
+        taskId: "tsk_002",
+        taskTitle: "Prepare sponsorship proposal",
+        taskStatus: "todo",
+        taskPriority: "critical",
+        taskDueIso: stamp(1, 9),
+      },
+      source: "task",
+      sourceLabel: "Prepare sponsorship proposal",
+      references: { ...EMPTY_REFS, taskId: "tsk_002" },
+      allowedTransitions: ["monitoring", "mitigated", "closed"],
+      identifiedAt: stamp(-1),
+      updatedAt: stamp(-1),
+    },
+    {
+      id: "rsk_004",
+      eventId: "techfest-2026",
+      title: "Outdoor stage weather contingency remains unconfirmed",
+      description:
+        "The covered hall is held as a contingency, but the go/no-go decision is still pending.",
+      status: "mitigated",
+      severity: "medium",
+      likelihood: "low",
+      impact: "high",
+      score: 3,
+      ownerMemberId: "usr_aarav",
+      ownerName: "Aarav Shah",
+      mitigation: {
+        strategy: "Keep the covered hall on hold until day −3 and reconfirm weather forecast.",
+        ownerMemberId: "usr_aarav",
+        ownerName: "Aarav Shah",
+        dueIso: stamp(21, 10),
+        status: "Complete",
+        taskId: null,
+        taskTitle: null,
+        taskStatus: null,
+        taskPriority: null,
+        taskDueIso: null,
+      },
+      source: "manual",
+      sourceLabel: null,
+      references: { ...EMPTY_REFS, meetingId: "mtg_001", meetingTitle: "Core committee sync — week 6" },
+      allowedTransitions: ["open", "monitoring", "closed"],
+      identifiedAt: stamp(-4),
+      updatedAt: stamp(-2),
+    },
+  ],
+  "spring-gala": [
+    {
+      id: "rsk_101",
+      eventId: "spring-gala",
+      title: "Catering quote exceeds provisional budget",
+      description: "The current venue quote is above the amount reserved for the gala dinner.",
+      status: "open",
+      severity: "medium",
+      likelihood: "medium",
+      impact: "medium",
+      score: 4,
+      ownerMemberId: "usr_priya",
+      ownerName: "Priya Mehta",
+      mitigation: null,
+      source: "document",
+      sourceLabel: "Catering quote.pdf",
+      references: { ...EMPTY_REFS, documentId: "doc_101", documentName: "Catering quote.pdf" },
+      allowedTransitions: ["monitoring", "mitigated", "closed"],
+      identifiedAt: stamp(-2),
+      updatedAt: stamp(-2),
+    },
+  ],
+  "hack-night-14": [],
+  "alumni-summit": [],
+};
+
+export function getInitialRisks(eventId: string): Risk[] {
+  return structuredClone(MOCK_RISKS_BY_EVENT[eventId] ?? []);
+}

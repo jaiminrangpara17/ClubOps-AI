@@ -56,6 +56,22 @@ export type {
   DocumentStats,
 } from "./document";
 export type {
+  Risk,
+  RiskStatus,
+  RiskSeverity,
+  RiskLikelihood,
+  RiskImpact,
+  RiskSource,
+  RiskMitigation,
+  RiskReferences,
+  CreateRiskRequest,
+  UpdateRiskRequest,
+  RisksListResponse,
+  RiskCapabilities,
+  RiskFilters,
+  RiskStats,
+} from "./risk";
+export type {
   Meeting,
   MeetingStatus,
   MeetingProcessingStatus,
