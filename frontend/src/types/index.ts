@@ -56,6 +56,18 @@ export type {
   DocumentStats,
 } from "./document";
 export type {
+  CopilotRole,
+  CopilotEntityKind,
+  CopilotSource,
+  CopilotSuggestedAction,
+  CopilotMessage,
+  CopilotConversation,
+  CopilotSendRequest,
+  CopilotSendResponse,
+  CopilotCapabilities,
+  CopilotStatus,
+} from "./ai";
+export type {
   Announcement,
   AnnouncementStatus,
   AnnouncementPriority,

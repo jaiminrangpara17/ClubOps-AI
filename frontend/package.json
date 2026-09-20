@@ -1,8 +1,8 @@
 {
-  "name": "clubops-ai",
-  "description": "ClubOps AI — Intelligent Event Operations & Management Platform",
+  "name": "clubops-ai-frontend",
   "private": true,
-  "version": "0.0.0",
+  "version": "1.0.0",
+  "description": "AI-powered event operations platform for clubs: events, tasks, volunteers, meetings, documents, and risks.",
   "type": "module",
   "scripts": {
     "dev": "vite",

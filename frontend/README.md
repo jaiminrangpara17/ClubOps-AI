@@ -1,162 +1,162 @@
-# 🚀 ClubOps AI — Frontend Command Center
+# ClubOps AI — Intelligent Event Operations Platform
 
 <div align="center">
 
-[![React](https://img.shields.io/badge/React-19.2-61DAFB?style=for-the-badge&logo=react&logoColor=black)](https://reactjs.org/)
-[![Vite](https://img.shields.io/badge/Vite-7.3-646CFF?style=for-the-badge&logo=vite&logoColor=white)](https://vitejs.dev/)
-[![TypeScript](https://img.shields.io/badge/TypeScript-5.9-3178C6?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
-[![TailwindCSS](https://img.shields.io/badge/Tailwind_CSS-v4-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white)](https://tailwindcss.com/)
-[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg?style=for-the-badge)](https://opensource.org/licenses/MIT)
+![ClubOps AI](https://img.shields.io/badge/ClubOps-AI%20Platform-indigo?style=for-the-badge&logo=react)
+![React 19](https://img.shields.io/badge/React-19.2-61DAFB?style=for-the-badge&logo=react&logoColor=black)
+![TypeScript](https://img.shields.io/badge/TypeScript-5.9-3178C6?style=for-the-badge&logo=typescript&logoColor=white)
+![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-v4-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white)
+![Vite](https://img.shields.io/badge/Vite-7.3-646CFF?style=for-the-badge&logo=vite&logoColor=white)
 
-**The executive web dashboard and operational hub for ClubOps AI.**
-
-[Subsystems](#-subsystems--modules) • [Tech Stack](#-tech-stack) • [Getting Started](#-getting-started) • [Project Structure](#-project-structure)
+<p align="center">
+  <strong>An all-in-one, AI-powered event operations and management platform designed for student clubs, campus organizations, and team event coordinators.</strong>
+</p>
 
 </div>
 
 ---
 
-## 📖 Overview
+## 🌟 Overview
 
-The **ClubOps AI Frontend** is a single-page application built with React 19, TypeScript 5.9, Vite 7, and Tailwind CSS v4. It delivers a rich user experience for event leaders, coordinators, and volunteers—featuring zero-delay routing, resilient asynchronous data fetching, and an atomic design system.
+**ClubOps AI** streamlines end-to-end event planning, coordination, and execution. From initial ideation with an AI Copilot to volunteer staffing, risk mitigation matrices, meeting minute extraction, and document repository management, ClubOps AI empowers student organizations to run seamless events with operational confidence.
 
 ---
 
-## ✨ Subsystems & Modules
+## ✨ Key Features
 
-### 1. Executive Operations Dashboard (`/dashboard`)
-- Real-time event statistics, day-1 readiness score, and countdown timers.
-- Integrated AI executive briefing drawer summarizing blockers and risk levels.
-- Full state snapshot export to JSON.
+### 🤖 AI Event Copilot
+- **Intelligent Planning Assistant**: Context-aware AI suggestions for scheduling, task allocation, and event checklists.
+- **Automated Insights**: Identifies timeline bottlenecks, missing roles, and operational blind spots before they become issues.
 
-### 2. Task Tracker & Kanban Board (`/events/:id/tasks`)
-- Interactive Kanban columns (`To do`, `In progress`, `Blocked`, `Done`) and dense list/table views.
-- Priority levels: Critical, High, Medium, Low.
-- Inline task creation, editing, status transitions, and assignee filtering.
+### 📅 Event Command Center
+- **Dynamic Event Overview**: Live countdowns, phase trackers (Planning, Active, Completed), and status summaries.
+- **Multi-Event Management**: Switch effortlessly across multiple simultaneous campus events and festivals.
 
-### 3. Volunteer Coordination (`/events/:id/volunteers`)
-- Full roster directory with search and departmental filtering (Stage, Registration, Logistics, Safety, Media, Hospitality).
-- Availability tracking (`Confirmed`, `Pending`, `Unavailable`), emergency duty tags, and check-in times.
-- Volunteer profile slide-out with shift assignments.
+### 📋 Task & Milestone Tracker
+- **Status & Priority Sorting**: Track tasks from Backlog to In-Progress and Completed.
+- **Role Assignments & Due Dates**: Assign team members and volunteers with granular deadlines.
 
-### 4. Meeting Intelligence (`/events/:id/meetings`)
-- Schedule and archive meetings with agendas, location, and attendee rosters.
-- Ingest raw meeting notes and transcripts.
-- AI Intelligence extraction for Key Decisions and Action Items.
-- 1-click conversion of action items into live tasks.
+### 🤝 Volunteer & Staffing Coordination
+- **Roster Management**: Manage volunteer profiles, contact details, assigned shifts, and roles.
+- **Attendance & Check-in**: Track check-ins and operational availability in real time.
 
-### 5. Document Hub & Asset Vault (`/events/:id/documents`)
-- Structured file repository with categories (Floor Plans, Permits, Run-Sheets, Budgets, Sponsorships).
-- Multipart simulated/real progress file uploader.
-- Instant search and document metadata inspection panel.
+### 📝 Meeting Minutes & Action Items
+- **Structured Agendas & Minutes**: Log decisions, attendance, and discussions.
+- **Action Item Extraction**: Convert meeting outcomes into assignable tasks with one click.
 
-### 6. Risk & Hazard Governance (`/events/:id/risks`)
-- Severity and likelihood assessment matrix.
-- Mitigation action planning linked to tasks and designated risk owners.
-- Structured risk status transitions (`Open`, `Monitoring`, `Mitigated`, `Closed`).
+### ⚠️ Risk Assessment & Matrix
+- **Impact vs. Probability Grid**: Categorize risks (Operational, Financial, Safety, Technical).
+- **Mitigation Action Plans**: Document contingency protocols and emergency contacts.
 
-### 7. Announcements & Broadcasts (`/events/:id/announcements`)
-- Multi-channel delivery for all members, organizers, volunteers, and faculty.
-- Pinned priority notices and read confirmation tracking.
-- Create, edit, and archive announcement workflows.
+### 📂 Documents & Assets Hub
+- **Centralized File Repository**: Store permits, sponsor decks, schedules, design assets, and floor plans.
+- **Category Filtering & Search**: Instant file lookup by tag and document type.
 
-### 8. AI Copilot Interface (`/events/:id/ai`)
-- Grounded chat workspace for asking questions against live event data.
-- Pre-built suggested prompts for blockers, volunteer gaps, and committee updates.
+### 📢 Announcements & Broadcasts
+- **Targeted Communications**: Publish announcements for organizers, volunteers, or attendees.
+- **Priority Badging**: Pin urgent updates and security notices.
 
-### 9. Design System & Foundation (`/foundation`)
-- Complete color tokens for dark/light themes.
-- Reusable UI component kit: `Button`, `Badge`, `Card`, `StatCard`, `Input`, `Dropdown`, `Breadcrumb`, `Progress`, `EmptyState`, `ErrorState`, `LoadingState`.
+### 🌓 Theme & User Experience
+- **Dark & Light Mode**: Built-in dark/light mode toggle.
+- **Mock & Live API Dual Engine**: Run completely standalone with comprehensive demo data, or connect seamlessly to a REST backend via `VITE_API_MODE`.
 
 ---
 
 ## 🛠️ Tech Stack
 
-| Tool | Version | Purpose |
-| :--- | :--- | :--- |
-| **React** | `19.2.6` | Component Architecture & State Management |
-| **Vite** | `7.3.2` | Lightning-fast HMR and bundling |
-| **TypeScript** | `5.9.3` | Type safety and domain contracts |
-| **Tailwind CSS** | `4.1.17` | Utility styling with CSS variable design tokens |
-| **React Router** | `7.18.4` | Client-side routing with HashRouter |
-| **Lucide React** | `1.47.0` | Accessible vector icon set |
-| **clsx / tailwind-merge** | Latest | Dynamic conditional class merging |
-
----
-
-## 📂 Project Structure
-
-```text
-frontend/
-├── public/                # Static assets & icons
-├── src/
-│   ├── components/        # Reusable domain & UI components
-│   │   ├── announcement/  # Announcement cards, filters & editors
-│   │   ├── auth/          # Login form & auth guard
-│   │   ├── common/        # Shared badges, preview notices, planned features
-│   │   ├── dashboard/     # Metric cards, charts & quick actions
-│   │   ├── document/      # Document tables, uploaders & viewers
-│   │   ├── event/         # Event forms, cards & selectors
-│   │   ├── layout/        # App shell, sidebar, header & navigation
-│   │   ├── meeting/       # Meeting agendas, intelligence & lists
-│   │   ├── risk/          # Risk matrix, severity badges & forms
-│   │   ├── task/          # Kanban board, task tables & drawers
-│   │   ├── ui/            # Atomic design system components
-│   │   └── volunteer/     # Volunteer cards, rosters & filters
-│   ├── context/           # AuthContext, EventContext, ThemeContext
-│   ├── data/              # Mock databases & initial seeds
-│   ├── hooks/             # Custom domain hooks (useTasks, useRisks, etc.)
-│   ├── lib/               # Utility formatters, date helpers, cn helper
-│   ├── pages/             # Route page views & event-scoped views
-│   ├── routes/            # App routing table
-│   ├── services/          # API adapters with mock & HTTP modes
-│   ├── styles/            # Design tokens & CSS theme variables
-│   └── types/             # TypeScript domain interfaces
-├── index.html             # HTML entry point
-├── package.json           # Dependencies & scripts
-├── tsconfig.json          # TypeScript configuration
-└── vite.config.ts         # Vite configuration
-```
+- **Framework**: [React 19](https://react.dev/) + [Vite 7](https://vitejs.dev/)
+- **Language**: [TypeScript](https://www.typescriptlang.org/)
+- **Styling**: [Tailwind CSS v4](https://tailwindcss.com/)
+- **Icons**: [Lucide React](https://lucide.dev/)
+- **Routing**: [React Router DOM v7](https://reactrouter.com/)
+- **State Management**: React Context & Custom Hooks
 
 ---
 
 ## 🚀 Getting Started
 
-### 1. Install Dependencies
-```bash
-npm install
-```
+### Prerequisites
 
-### 2. Run Development Server
-```bash
-npm run dev
-```
-Open `http://localhost:5173` in your browser.
+- [Node.js](https://nodejs.org/) (version 18+ recommended)
+- [npm](https://www.npmjs.com/) or [pnpm](https://pnpm.io/) or [yarn](https://yarnpkg.com/)
 
-### 3. Build for Production
-```bash
-npm run build
-```
-Optimized assets will be output to the `dist/` directory.
+### Installation
 
-### 4. Preview Production Build
-```bash
-npm run preview
+1. **Clone the repository**:
+   ```bash
+   git clone https://github.com/jaiminrangpara17/ClubOps-AI.git
+   cd ClubOps-AI
+   ```
+
+2. **Install dependencies**:
+   ```bash
+   npm install
+   ```
+
+3. **Configure environment (optional)**:
+   Copy `.env.example` to `.env`:
+   ```bash
+   cp .env.example .env
+   ```
+
+   | Variable | Default | Description |
+   | :--- | :--- | :--- |
+   | `VITE_API_MODE` | `mock` | `mock` for local standalone mode, `api` for live backend |
+   | `VITE_API_BASE_URL` | `http://localhost:8000/api` | Backend REST API base URL |
+
+4. **Start the development server**:
+   ```bash
+   npm run dev
+   ```
+   Open [http://localhost:5173](http://localhost:5173) in your browser.
+
+5. **Build for Production**:
+   ```bash
+   npm run build
+   ```
+
+---
+
+## 📁 Project Structure
+
+```
+├── public/                # Static public assets
+├── src/
+│   ├── components/        # Reusable UI components & layouts
+│   │   ├── layout/        # Sidebar, Header, EventLayout
+│   │   └── ui/            # Buttons, Badges, Modals, StatCards, Tabs
+│   ├── context/           # React context providers (Auth, Event, Theme)
+│   ├── data/              # Mock dataset for offline/demo operation
+│   ├── hooks/             # Custom utility hooks
+│   ├── lib/               # Utility functions & helpers
+│   ├── pages/             # Main application pages
+│   │   ├── event/         # Event sub-pages (Copilot, Tasks, Risks, Volunteers, etc.)
+│   │   ├── DashboardPage.tsx
+│   │   ├── EventsPage.tsx
+│   │   ├── FoundationPage.tsx
+│   │   ├── LoginPage.tsx
+│   │   └── SettingsPage.tsx
+│   ├── routes/            # Route configuration and guards
+│   ├── services/          # HTTP client, mock adapters, and API services
+│   ├── styles/            # Design system tokens and styles
+│   ├── types/             # TypeScript domain definitions and models
+│   ├── App.tsx            # Main application root
+│   └── main.tsx           # Application entry point
+├── index.html             # HTML template
+├── package.json           # Dependencies and scripts
+├── tsconfig.json          # TypeScript configuration
+└── vite.config.ts         # Vite bundler configuration
 ```
 
 ---
 
-## 🔑 Demo Accounts
+## 💡 Demo Credentials
 
-| Role | Email | Password |
-| :--- | :--- | :--- |
-| **Event Head** | `rahul@clubops.dev` | `clubops2026` |
-| **President** | `president@clubops.dev` | `clubops2026` |
-| **Volunteer** | `volunteer@clubops.dev` | `clubops2026` |
-| **Faculty Advisor** | `faculty@clubops.dev` | `clubops2026` |
+When running in **Mock Mode** (`VITE_API_MODE=mock`):
+- Click **"Sign In with Demo Account"** or enter any email/password to explore all dashboard features with pre-populated demo events, volunteers, tasks, and meeting notes.
 
 ---
 
 ## 📄 License
 
-Distributed under the MIT License.
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
