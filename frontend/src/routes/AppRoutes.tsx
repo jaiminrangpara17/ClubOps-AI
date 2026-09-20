@@ -8,6 +8,9 @@ import LoginPage from "@/pages/LoginPage";
 import NotFoundPage from "@/pages/NotFoundPage";
 import SettingsPage from "@/pages/SettingsPage";
 import EventAnnouncementsPage from "@/pages/event/EventAnnouncementsPage";
+import AnnouncementCreatePage from "@/pages/event/AnnouncementCreatePage";
+import AnnouncementDetailPage from "@/pages/event/AnnouncementDetailPage";
+import AnnouncementEditPage from "@/pages/event/AnnouncementEditPage";
 import EventCopilotPage from "@/pages/event/EventCopilotPage";
 import DocumentDetailPage from "@/pages/event/DocumentDetailPage";
 import EventDocumentsPage from "@/pages/event/EventDocumentsPage";
@@ -59,6 +62,9 @@ export function AppRoutes() {
             <Route path="risks/:riskId" element={<RiskDetailPage />} />
             <Route path="risks/:riskId/edit" element={<RiskEditPage />} />
             <Route path="announcements" element={<EventAnnouncementsPage />} />
+            <Route path="announcements/new" element={<AnnouncementCreatePage />} />
+            <Route path="announcements/:announcementId" element={<AnnouncementDetailPage />} />
+            <Route path="announcements/:announcementId/edit" element={<AnnouncementEditPage />} />
             <Route path="ai" element={<EventCopilotPage />} />
             <Route path="*" element={<NotFoundPage />} />
           </Route>

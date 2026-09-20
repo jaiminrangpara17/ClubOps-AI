@@ -1,5 +1,6 @@
 {
   "name": "clubops-ai",
+  "description": "ClubOps AI — Intelligent Event Operations & Management Platform",
   "private": true,
   "version": "0.0.0",
   "type": "module",

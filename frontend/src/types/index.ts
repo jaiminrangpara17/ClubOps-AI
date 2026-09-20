@@ -56,6 +56,19 @@ export type {
   DocumentStats,
 } from "./document";
 export type {
+  Announcement,
+  AnnouncementStatus,
+  AnnouncementPriority,
+  AnnouncementAudience,
+  AnnouncementCategory,
+  CreateAnnouncementRequest,
+  UpdateAnnouncementRequest,
+  AnnouncementsListResponse,
+  AnnouncementCapabilities,
+  AnnouncementFilters,
+  AnnouncementStats,
+} from "./announcement";
+export type {
   Risk,
   RiskStatus,
   RiskSeverity,

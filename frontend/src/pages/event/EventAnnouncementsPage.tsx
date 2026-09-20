@@ -1,91 +1,124 @@
-import { AtSign, Bell, Megaphone, MessageSquare, Send } from "lucide-react";
-import { PlannedCapabilities } from "@/components/common/PlannedCapabilities";
+import { Megaphone, Plus } from "lucide-react";
+import { useMemo, useState } from "react";
+import { useNavigate, useParams } from "react-router-dom";
 import { PreviewNotice } from "@/components/common/PreviewNotice";
 import {
-  Badge,
-  Button,
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-  EmptyState,
-  PageHeader,
-  StatCard,
-} from "@/components/ui";
-import type { IconComponent } from "@/types";
-
-const CHANNELS: { id: string; name: string; detail: string; icon: IconComponent }[] = [
-  { id: "email", name: "Email", detail: "Committee, crew and attendee lists", icon: AtSign },
-  { id: "in-app", name: "In-app", detail: "Notifications inside ClubOps", icon: Bell },
-  { id: "chat", name: "Chat", detail: "Connected messaging channels", icon: MessageSquare },
-];
+  AnnouncementCards,
+  AnnouncementFilters,
+  AnnouncementStats,
+  AnnouncementTable,
+} from "@/components/announcement";
+import { Button, Card, EmptyState, ErrorState, PageHeader, Skeleton } from "@/components/ui";
+import { useAuth } from "@/context/AuthContext";
+import { useAnnouncementCapabilities, useAnnouncements } from "@/hooks/useAnnouncements";
+import {
+  computeAnnouncementStats,
+  EMPTY_ANNOUNCEMENT_FILTERS,
+  filterAnnouncements,
+  sortAnnouncements,
+} from "@/lib/announcement";
+import { isMockApi } from "@/services/apiMode";
+import type { AnnouncementFilters as AnnouncementFiltersData } from "@/types";
 
 export default function EventAnnouncementsPage() {
+  const { eventId = "" } = useParams();
+  const navigate = useNavigate();
+  const { user } = useAuth();
+  const { capabilities } = useAnnouncementCapabilities(eventId);
+  const { announcements, error, isLoading, refetch } = useAnnouncements(eventId);
+  const [filters, setFilters] = useState<AnnouncementFiltersData>(EMPTY_ANNOUNCEMENT_FILTERS);
+
+  const sorted = useMemo(() => sortAnnouncements(announcements), [announcements]);
+  const filtered = useMemo(() => filterAnnouncements(sorted, filters), [sorted, filters]);
+  const stats = useMemo(() => computeAnnouncementStats(announcements), [announcements]);
+  const hasFilters = JSON.stringify(filters) !== JSON.stringify(EMPTY_ANNOUNCEMENT_FILTERS);
+  const canWrite =
+    user?.role === "PRESIDENT" || user?.role === "EVENT_HEAD" || user?.role === "FACULTY";
+  const canCreate = canWrite && Boolean(capabilities?.create);
+
   return (
     <div className="space-y-6">
       <PageHeader
         size="md"
         divider={false}
         title="Announcements"
-        description="Publish updates to members, volunteers and stakeholders."
+        description="Keep your event team informed with important updates and decisions."
         actions={
-          <Button leadingIcon={Send} disabled title="Sending ships with the announcements module">
-            New announcement
-          </Button>
+          canCreate ? (
+            <Button leadingIcon={Plus} onClick={() => navigate(`/events/${eventId}/announcements/new`)}>
+              New announcement
+            </Button>
+          ) : undefined
         }
       />
 
-      <PreviewNotice />
+      {isMockApi && (
+        <PreviewNotice>
+          <span className="font-medium text-fg">Development data.</span> Announcements use the
+          isolated adapter. There is no email, SMS, push or notification center — publishing only
+          changes the record status after the adapter confirms success.
+        </PreviewNotice>
+      )}
 
-      <div className="grid gap-4 sm:grid-cols-3">
-        <StatCard label="Published" value="—" hint="Awaiting data" icon={Megaphone} tone="brand" />
-        <StatCard label="Scheduled" value="—" hint="Awaiting data" icon={Send} tone="info" />
-        <StatCard label="Drafts" value="—" hint="Awaiting data" icon={Megaphone} tone="neutral" />
-      </div>
-
-      <div className="grid gap-4 lg:grid-cols-3">
-        <Card className="lg:col-span-2">
-          <CardHeader>
-            <CardTitle>Delivery channels</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="grid gap-3 sm:grid-cols-3">
-              {CHANNELS.map((channel) => {
-                const Icon = channel.icon;
-                return (
-                  <div
-                    key={channel.id}
-                    className="rounded-control border border-dashed border-line-strong bg-surface-subtle p-3.5"
-                  >
-                    <span className="flex h-8 w-8 items-center justify-center rounded-control bg-surface text-fg-subtle">
-                      <Icon width={15} height={15} aria-hidden />
-                    </span>
-                    <p className="mt-2 text-sm font-medium text-fg">{channel.name}</p>
-                    <p className="mt-0.5 text-xs text-fg-muted">{channel.detail}</p>
-                    <Badge tone="neutral" variant="outline" className="mt-2">
-                      Inactive
-                    </Badge>
-                  </div>
-                );
-              })}
-            </div>
+      {isLoading ? (
+        <>
+          <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+            {Array.from({ length: 4 }).map((_, index) => (
+              <Skeleton key={index} className="h-28 rounded-card" />
+            ))}
+          </div>
+          <Card padding="md" className="space-y-3">
+            {Array.from({ length: 4 }).map((_, index) => (
+              <Skeleton key={index} className="h-12 rounded-control" />
+            ))}
+          </Card>
+        </>
+      ) : error ? (
+        <ErrorState title="Unable to load announcements" description={error} onRetry={refetch} retryLabel="Retry" />
+      ) : announcements.length === 0 ? (
+        <EmptyState
+          variant="page"
+          icon={Megaphone}
+          title="No announcements yet"
+          description="Share operational updates so the team knows what is current."
+          actions={
+            canCreate ? (
+              <Button leadingIcon={Plus} onClick={() => navigate(`/events/${eventId}/announcements/new`)}>
+                New announcement
+              </Button>
+            ) : undefined
+          }
+        />
+      ) : (
+        <>
+          <AnnouncementStats stats={stats} />
+          <Card padding="md">
+            <AnnouncementFilters
+              filters={filters}
+              onChange={setFilters}
+              total={announcements.length}
+              shown={filtered.length}
+            />
+          </Card>
+          {filtered.length === 0 && hasFilters ? (
             <EmptyState
               icon={Megaphone}
-              title="No announcements yet"
-              description="Published and scheduled updates for this event will be listed here with their audience and delivery status."
+              title="No announcements match these filters"
+              description="Try changing or clearing your filters."
+              actions={
+                <Button variant="outline" onClick={() => setFilters(EMPTY_ANNOUNCEMENT_FILTERS)}>
+                  Clear filters
+                </Button>
+              }
             />
-          </CardContent>
-        </Card>
-
-        <PlannedCapabilities
-          items={[
-            "Audience targeting per role and shift",
-            "Scheduled and recurring sends",
-            "Reusable announcement templates",
-            "Delivery and read reporting",
-          ]}
-        />
-      </div>
+          ) : (
+            <>
+              <AnnouncementTable eventId={eventId} announcements={filtered} />
+              <AnnouncementCards eventId={eventId} announcements={filtered} />
+            </>
+          )}
+        </>
+      )}
     </div>
   );
 }

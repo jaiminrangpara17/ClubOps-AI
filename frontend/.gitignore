@@ -7,39 +7,18 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
-# Runtime data
-pids
-*.pid
-*.seed
-*.pid.lock
-
-# Dependency directories
-node_modules/
-jspm_packages/
-
-# Production build output
-dist/
-dist-ssr/
-build/
+node_modules
+dist
+dist-ssr
 *.local
 
-# Environment variables
-.env
-.env.*
-!.env.example
-
-# IDE and Editor configs
+# Editor directories and files
 .vscode/*
 !.vscode/extensions.json
-.idea/
+.idea
+.DS_Store
 *.suo
 *.ntvs*
 *.njsproj
 *.sln
 *.sw?
-.DS_Store
-Thumbs.db
-
-# Antigravity & AI cache / scratch
-.gemini/
-.agents/
