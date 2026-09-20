@@ -116,3 +116,8 @@ class MalformedAIOutputError(AIValidationError):
 
 class ActionValidationError(AIValidationError):
     default_message = "Invalid AI action."
+
+
+class RiskValidationError(AIValidationError):
+    default_message = "Risk validation failed."
+

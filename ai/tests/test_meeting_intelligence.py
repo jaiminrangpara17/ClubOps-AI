@@ -5,7 +5,6 @@ from __future__ import annotations
 import json
 
 import pytest
-
 from app.core.exceptions import MalformedAIOutputError, SchemaValidationError
 from app.schemas.meeting_intelligence import MeetingIntelligenceRequest
 from app.services.meeting_intelligence import MeetingIntelligenceService

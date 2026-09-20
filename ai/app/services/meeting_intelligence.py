@@ -42,9 +42,18 @@ class MeetingIntelligenceService:
         return validate_ai_output(llm_response.text, MeetingResult)
 
 
-meeting_intelligence = MeetingIntelligenceService()
+meeting_intelligence: MeetingIntelligenceService | None = None
+
+
+def get_meeting_intelligence() -> MeetingIntelligenceService:
+    global meeting_intelligence
+    if meeting_intelligence is None:
+        meeting_intelligence = MeetingIntelligenceService()
+    return meeting_intelligence
 
 
 async def close_meeting_intelligence() -> None:
-    if meeting_intelligence._llm is not None:
+    global meeting_intelligence
+    if meeting_intelligence is not None and meeting_intelligence._llm is not None:
         await meeting_intelligence._llm.aclose()
+
