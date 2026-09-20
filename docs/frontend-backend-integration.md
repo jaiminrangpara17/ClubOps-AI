@@ -40,10 +40,8 @@ required — every feature already routes UI → hook → feature service →
 - `apiRequest<T>` — JSON, 12 s timeout, AbortSignal support.
 - `apiUpload<T>` — multipart via XHR with real upload progress.
 - Error taxonomy: network / unauthorized / forbidden / not-found / conflict /
-  payload-too-large / unsupported-media / validation / server / unexpected,
-  mapped from 400/401/403/404/409/413/415/422/429*/5xx.
-  (*429 currently maps to `unexpected`; copilot hook special-cases it by
-  status. Backend team: keep 429 for AI rate limits.)
+  rate-limited / payload-too-large / unsupported-media / validation / server /
+  unexpected, mapped from 400/401/403/404/409/413/415/422/429/5xx.
 - `describeApiError` produces all user-facing messages; raw errors never
   reach the UI.
 
