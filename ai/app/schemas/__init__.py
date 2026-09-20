@@ -28,7 +28,13 @@ from .communication import (
     BriefingRequest,
     DailyBriefing,
 )
-from .event import Event, Milestone
+from .event import Event, EventPlanRequest, Milestone
+from .integration import (
+    ActionExecutionRequest,
+    ActionExecutionResponse,
+    ExecutionStatus,
+    verify_action_execution,
+)
 from .knowledge import (
     KnowledgeAnswer,
     KnowledgeChunk,
@@ -51,6 +57,8 @@ __all__ = [
     "AIAction",
     "ActionEngineContext",
     "ActionEngineRequest",
+    "ActionExecutionRequest",
+    "ActionExecutionResponse",
     "ActionProposalList",
     "ActionType",
     "AnnouncementRequest",
@@ -68,7 +76,9 @@ __all__ = [
     "CreateTaskParameters",
     "DailyBriefing",
     "Event",
+    "EventPlanRequest",
     "EventType",
+    "ExecutionStatus",
     "KnowledgeAnswer",
     "KnowledgeChunk",
     "KnowledgeDocument",
@@ -92,4 +102,5 @@ __all__ = [
     "UpdateTaskParameters",
     "UpdateTaskStatusAction",
     "UpdateTaskStatusParameters",
+    "verify_action_execution",
 ]

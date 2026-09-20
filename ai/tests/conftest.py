@@ -20,6 +20,8 @@ _ENV_VARS = (
     "LLM_MAX_RETRIES",
     "LLM_BASE_URL",
     "LLM_MAX_OUTPUT_TOKENS",
+    "AI_SERVICE_URL",
+    "AI_SERVICE_TIMEOUT",
 )
 
 FAKE_API_KEY = "sk-clubops-test-secret-0123456789"

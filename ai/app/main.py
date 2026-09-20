@@ -9,32 +9,36 @@ from typing import Any
 
 from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
-from pydantic import BaseModel, Field
 
 from app import __version__
 from app.core.config import get_settings
 from app.core.exceptions import AIServiceError
 from app.core.llm import close_llm_service
-from app.schemas.common import EventType
-from app.schemas.event import Event
+from app.schemas.action_engine import ActionEngineRequest, ActionProposalList
+from app.schemas.communication import (
+    AnnouncementRequest,
+    AnnouncementResult,
+    BriefingRequest,
+    DailyBriefing,
+)
+from app.schemas.event import Event, EventPlanRequest
+from app.schemas.knowledge import KnowledgeAnswer, KnowledgeQueryRequest
+from app.schemas.meeting import MeetingResult
+from app.schemas.meeting_intelligence import MeetingIntelligenceRequest
+from app.schemas.risk_intelligence import (
+    RiskAnalysisResult,
+    RiskIntelligenceRequest,
+)
+from app.services.action_engine import ActionEngineService
+from app.services.announcement_generator import AnnouncementGeneratorService
+from app.services.daily_briefing import DailyBriefingService
 from app.services.event_planner import EventPlannerService
+from app.services.knowledge_assistant import KnowledgeAssistantService
+from app.services.meeting_intelligence import MeetingIntelligenceService
+from app.services.risk_intelligence import RiskIntelligenceService
 from app.validators.action_validator import validate_ai_action, validate_ai_actions
 
 logger = logging.getLogger("clubops.ai")
-
-
-class EventPlanRequest(BaseModel):
-    """Payload for generating an AI event plan."""
-
-    prompt: str = Field(min_length=3, description="User prompt describing event requirements")
-    event_type: EventType | None = Field(default=None, description="Preferred event category")
-    target_date: str | None = Field(default=None, description="Target start date or date range")
-    expected_attendees: int | None = Field(
-        default=None, ge=0, description="Estimated participant count"
-    )
-    temperature: float = Field(
-        default=0.2, ge=0.0, le=1.0, description="Sampling temperature"
-    )
 
 
 @asynccontextmanager
@@ -93,6 +97,78 @@ async def plan_event(request: EventPlanRequest) -> Event:
         expected_attendees=request.expected_attendees,
         temperature=request.temperature,
     )
+
+
+@app.post(
+    "/meetings/analyze",
+    response_model=MeetingResult,
+    tags=["meeting_intelligence"],
+    summary="Extract structured meeting intelligence from raw transcripts",
+)
+async def analyze_meeting(request: MeetingIntelligenceRequest) -> MeetingResult:
+    """Extract summary, decisions, action items, and follow-ups from meeting transcript."""
+    service = MeetingIntelligenceService()
+    return await service.process_transcript(request)
+
+
+@app.post(
+    "/risks/analyze",
+    response_model=RiskAnalysisResult,
+    tags=["risk_intelligence"],
+    summary="Identify grounded operational risks with deterministic evidence validation",
+)
+async def analyze_risks(request: RiskIntelligenceRequest) -> RiskAnalysisResult:
+    """Analyze operational context and return validated, evidence-grounded risks."""
+    service = RiskIntelligenceService()
+    return await service.analyze_risks(request)
+
+
+@app.post(
+    "/actions/propose",
+    response_model=ActionProposalList,
+    tags=["action_engine"],
+    summary="Generate safe, structured action proposals from operational context",
+)
+async def propose_actions(request: ActionEngineRequest) -> ActionProposalList:
+    """Convert user intent and context into safe, whitelisted action proposals."""
+    service = ActionEngineService()
+    return await service.propose_actions(request)
+
+
+@app.post(
+    "/knowledge/query",
+    response_model=KnowledgeAnswer,
+    tags=["knowledge"],
+    summary="Answer queries strictly grounded in retrieved club knowledge documents",
+)
+async def query_knowledge(request: KnowledgeQueryRequest) -> KnowledgeAnswer:
+    """Answer questions strictly from retrieved context chunks with source citations."""
+    service = KnowledgeAssistantService()
+    return await service.answer(request)
+
+
+@app.post(
+    "/announcements/generate",
+    response_model=AnnouncementResult,
+    tags=["communication"],
+    summary="Generate grounded draft announcement from supplied event and club facts",
+)
+async def generate_announcement(request: AnnouncementRequest) -> AnnouncementResult:
+    """Draft grounded club announcements tailored to audience and tone."""
+    service = AnnouncementGeneratorService()
+    return await service.generate(request)
+
+
+@app.post(
+    "/briefings/generate",
+    response_model=DailyBriefing,
+    tags=["communication"],
+    summary="Generate grounded, categorized daily operational briefing",
+)
+async def generate_briefing(request: BriefingRequest) -> DailyBriefing:
+    """Synthesize operational context into a structured, categorized daily briefing."""
+    service = DailyBriefingService()
+    return await service.generate(request)
 
 
 @app.post(

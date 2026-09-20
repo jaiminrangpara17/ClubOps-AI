@@ -33,3 +33,17 @@ class Event(BaseModel):
         if self.start_date and self.end_date and self.end_date < self.start_date:
             raise ValueError("end_date must be >= start_date")
         return self
+
+
+class EventPlanRequest(BaseModel):
+    """Payload for generating an AI event plan."""
+
+    prompt: str = Field(min_length=3, description="User prompt describing event requirements")
+    event_type: EventType | None = Field(default=None, description="Preferred event category")
+    target_date: str | None = Field(default=None, description="Target start date or date range")
+    expected_attendees: int | None = Field(
+        default=None, ge=0, description="Estimated participant count"
+    )
+    temperature: float = Field(
+        default=0.2, ge=0.0, le=1.0, description="Sampling temperature"
+    )

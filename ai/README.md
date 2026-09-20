@@ -312,6 +312,110 @@ if __name__ == "__main__":
     asyncio.run(main())
 ```
 
+## Sprint 9: Backend Integration
+
+Sprint 9 connects the AI microservice to the ClubOps backend architecture with strict boundary enforcement, human confirmation guarantees, and typed HTTP clients.
+
+### Architecture & Boundaries
+
+```
+[ Frontend / User ]
+       ↓ (HTTP)
+[ ClubOps Backend (FastAPI + SQLAlchemy) ]
+   ├── Authentication & Authorization (JWT)
+   ├── Database Mutations (PostgreSQL / SQLite)
+   └── AIServiceClient / AsyncAIServiceClient (HTTP)
+              ↓
+[ ClubOps AI Service (FastAPI Microservice :8001) ]
+   ├── Event Planner (/events/plan)
+   ├── Meeting Intelligence (/meetings/analyze)
+   ├── Risk Intelligence (/risks/analyze)
+   ├── Action Engine (/actions/propose)
+   ├── Knowledge Assistant (/knowledge/query)
+   ├── Communication Services (/announcements/generate, /briefings/generate)
+   └── Action Whitelist Validation (/actions/validate, /actions/validate-batch)
+```
+
+### Critical Architectural Guarantees
+
+1. **AI NEVER Mutates the Database**: The AI microservice has zero database connections, zero ORM models, and zero direct access to persistence layers. It produces strictly validated proposals and analytical results.
+2. **Backend is the Authoritative Gatekeeper**: The ClubOps backend handles user authentication, role-based authorization, database transactions, and business invariants.
+3. **Mandatory Human Confirmation**: Every proposed mutation requires explicit human approval (`confirmed=True`). Unconfirmed actions are deterministically rejected.
+4. **Zero Fallback Mutations**: If an AI call times out, fails, or produces invalid output, the backend NEVER silently executes fallback database changes.
+
+### HTTP Client Library (`app/client.py`)
+
+The `app.client` module provides synchronous (`AIServiceClient`) and asynchronous (`AsyncAIServiceClient`) HTTP clients for backend routers, Celery tasks, or external consumers.
+
+#### Synchronous Example
+
+```python
+from app.client import AIServiceClient
+from app.schemas.action_engine import ActionEngineRequest
+
+with AIServiceClient(base_url="http://localhost:8001") as client:
+    # Health check
+    health = client.health()
+    print("AI status:", health["status"])
+
+    # Propose actions
+    proposals = client.propose_actions(
+        ActionEngineRequest(user_intent="Create task for venue setup")
+    )
+    for action in proposals.actions:
+        print(f"Proposed: {action.action}, requires confirmation: {action.requires_confirmation}")
+```
+
+#### Asynchronous Example
+
+```python
+import asyncio
+from app.client import AsyncAIServiceClient
+from app.schemas.knowledge import KnowledgeQueryRequest
+
+async def query_ai():
+    async with AsyncAIServiceClient(base_url="http://localhost:8001") as client:
+        result = await client.query_knowledge(
+            KnowledgeQueryRequest(query="What is the club reimbursement policy?")
+        )
+        print(f"Answer: {result.answer}")
+        print(f"Grounded: {result.grounded}")
+
+asyncio.run(query_ai())
+```
+
+### Action Execution Contract (`app/schemas/integration.py`)
+
+When the backend is ready to execute an approved AIAction, it verifies the execution contract:
+
+```python
+from app.schemas.actions import CreateTaskAction, CreateTaskParameters
+from app.schemas.integration import ActionExecutionRequest, verify_action_execution
+
+# Validated proposal
+action = CreateTaskAction(
+    action="create_task",
+    parameters=CreateTaskParameters(title="Book conference hall"),
+    requires_confirmation=True,
+)
+
+# Contract verification before backend database mutation:
+request = ActionExecutionRequest(
+    action=action,
+    confirmed=True,         # Explicit user confirmation
+    user_id="user_abc123",  # Authenticated caller ID
+)
+verify_action_execution(request)  # Raises ActionValidationError if unconfirmed or unauthenticated
+```
+
+### Typed Error Hierarchy (`app/core/exceptions.py`)
+
+Client calls map low-level transport and HTTP failures to typed exceptions:
+- **`AIClientError`** (502): Generic AI microservice client communication error.
+- **`AIClientTimeoutError`** (504): Request to AI service exceeded configured timeout.
+- **`AIClientConnectionError`** (503): Could not connect to AI microservice.
+- **`AIClientValidationError`** (422): AI response or request payload failed Pydantic validation.
+
 ## Requirements
 
 - Python 3.11+ (3.10 minimum)
@@ -336,12 +440,18 @@ Interactive API documentation available at `http://localhost:8001/docs`.
 
 ## API Endpoints
 
-| Method | Endpoint | Description |
-| :--- | :--- | :--- |
-| `GET` | `/health` | Service health status check |
-| `POST` | `/events/plan` | Generate a structured Event plan from prompt |
-| `POST` | `/actions/validate` | Validate single AI action payload |
-| `POST` | `/actions/validate-batch` | Validate list of AI action payloads |
+| Method | Endpoint | Request Model | Response Model | Description |
+| :--- | :--- | :--- | :--- | :--- |
+| `GET` | `/health` | _None_ | `dict` | Service health status check |
+| `POST` | `/events/plan` | `EventPlanRequest` | `Event` | Generate structured event plan from prompt |
+| `POST` | `/meetings/analyze` | `MeetingIntelligenceRequest` | `MeetingResult` | Extract decisions and action items from transcript |
+| `POST` | `/risks/analyze` | `RiskIntelligenceRequest` | `RiskAnalysisResult` | Identify evidence-grounded operational risks |
+| `POST` | `/actions/propose` | `ActionEngineRequest` | `ActionProposalList` | Generate safe, typed action proposals |
+| `POST` | `/knowledge/query` | `KnowledgeQueryRequest` | `KnowledgeAnswer` | Grounded RAG queries with source citations |
+| `POST` | `/announcements/generate` | `AnnouncementRequest` | `AnnouncementResult` | Draft grounded club announcements |
+| `POST` | `/briefings/generate` | `BriefingRequest` | `DailyBriefing` | Synthesize categorized daily operational briefing |
+| `POST` | `/actions/validate` | `dict` | `dict` | Validate single AI action payload |
+| `POST` | `/actions/validate-batch` | `list[dict]` | `list[dict]` | Validate list of AI action payloads |
 
 ## Schemas & Validation
 
@@ -355,6 +465,7 @@ Interactive API documentation available at `http://localhost:8001/docs`.
 - `action_engine`: `ActionEngineRequest`, `ActionProposalList`
 - `knowledge`: `KnowledgeDocument`, `KnowledgeChunk`, `KnowledgeQueryRequest`, `KnowledgeSource`, `KnowledgeAnswer`
 - `communication`: `AnnouncementRequest`, `AnnouncementResult`, `BriefingRequest`, `BriefingItem`, `DailyBriefing`
+- `integration`: `ActionExecutionRequest`, `ActionExecutionResponse`, `ExecutionStatus`, `verify_action_execution`
 
 ### Supported AI Actions (Whitelist)
 `create_task` | `update_task` | `assign_task` | `update_task_status` | `create_announcement` | `create_event`

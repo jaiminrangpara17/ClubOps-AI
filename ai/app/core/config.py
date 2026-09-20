@@ -43,6 +43,10 @@ class Settings(BaseSettings):
     app_env: Literal["development", "test", "production"] = "development"
     log_level: str = "INFO"
 
+    # --- integration client (backend <-> ai service) ---
+    ai_service_url: str = "http://localhost:8001"
+    ai_service_timeout: float = Field(default=30.0, gt=0.0, le=300.0)
+
     # --- llm ---
     llm_provider: LLMProvider = "gemini"
     llm_api_key: SecretStr | None = None
@@ -95,6 +99,7 @@ class Settings(BaseSettings):
         return {
             "service": self.service_name,
             "env": self.app_env,
+            "ai_service_url": self.ai_service_url,
             "provider": self.llm_provider,
             "model": self.llm_model,
             "base_url": self.resolved_base_url,

@@ -129,3 +129,31 @@ class KnowledgeValidationError(AIValidationError):
 class CommunicationValidationError(AIValidationError):
     default_message = "Communication grounding validation failed."
 
+
+class AIClientError(AIServiceError):
+    """Generic failure in AIServiceClient when communicating with the AI service."""
+
+    status_code = 502
+    default_message = "The AI service client encountered an error."
+
+
+class AIClientTimeoutError(AIClientError):
+    """The HTTP request to the AI service timed out."""
+
+    status_code = 504
+    default_message = "The AI service request timed out."
+
+
+class AIClientConnectionError(AIClientError):
+    """Could not reach the AI service."""
+
+    status_code = 503
+    default_message = "Could not reach the AI service."
+
+
+class AIClientValidationError(AIClientError):
+    """AI service response or request payload failed validation."""
+
+    status_code = 422
+    default_message = "AI service client payload validation failed."
+
