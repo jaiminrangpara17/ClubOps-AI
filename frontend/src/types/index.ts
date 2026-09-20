@@ -41,6 +41,21 @@ export type {
   VolunteerWithTasks,
 } from "./volunteer";
 export type {
+  DocumentStatus,
+  DocumentKind,
+  DocumentSummary,
+  ClubDocument,
+  DocumentContent,
+  DocumentIntelligence,
+  DocumentRelations,
+  DocumentContentSearchMatch,
+  DocumentContentSearchResponse,
+  DocumentsListResponse,
+  DocumentCapabilities,
+  DocumentFilters,
+  DocumentStats,
+} from "./document";
+export type {
   Meeting,
   MeetingStatus,
   MeetingProcessingStatus,

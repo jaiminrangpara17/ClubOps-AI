@@ -9,6 +9,10 @@ export type ApiErrorKind =
   | "unauthorized"
   | "forbidden"
   | "not-found"
+  | "conflict"
+  | "payload-too-large"
+  | "unsupported-media"
+  | "validation"
   | "server"
   | "unexpected";
 
@@ -40,6 +44,14 @@ export function describeApiError(error: unknown, fallback: string): string {
         return "You do not have permission to view this data.";
       case "not-found":
         return "This data is not available.";
+      case "conflict":
+        return "This action conflicts with the current state. Refresh and try again.";
+      case "payload-too-large":
+        return "That file is larger than the maximum allowed size.";
+      case "unsupported-media":
+        return "That file type is not supported.";
+      case "validation":
+        return "Some of the submitted values were rejected. Please review and try again.";
       case "network":
         return "Unable to connect to ClubOps. Please check your connection and try again.";
       case "server":
@@ -100,6 +112,12 @@ export async function apiRequest<T>(path: string, options: ApiRequestOptions = {
   }
   if (response.status === 403) throw new ApiError("forbidden", "Forbidden", 403);
   if (response.status === 404) throw new ApiError("not-found", "Not found", 404);
+  if (response.status === 409) throw new ApiError("conflict", "Conflict", 409);
+  if (response.status === 413) throw new ApiError("payload-too-large", "Payload too large", 413);
+  if (response.status === 415) throw new ApiError("unsupported-media", "Unsupported media type", 415);
+  if (response.status === 400 || response.status === 422) {
+    throw new ApiError("validation", "Validation failed", response.status);
+  }
   if (response.status >= 500) throw new ApiError("server", "Server error", response.status);
   if (!response.ok) throw new ApiError("unexpected", `Request failed (${response.status})`, response.status);
 
@@ -110,4 +128,88 @@ export async function apiRequest<T>(path: string, options: ApiRequestOptions = {
   } catch {
     throw new ApiError("unexpected", "Malformed JSON response", response.status);
   }
+}
+
+/** Maps an HTTP status to the shared ApiError taxonomy. */
+function errorForStatus(status: number): ApiError {
+  if (status === 401) {
+    window.dispatchEvent(new CustomEvent(UNAUTHORIZED_EVENT));
+    return new ApiError("unauthorized", "Unauthorised", 401);
+  }
+  if (status === 403) return new ApiError("forbidden", "Forbidden", 403);
+  if (status === 404) return new ApiError("not-found", "Not found", 404);
+  if (status === 409) return new ApiError("conflict", "Conflict", 409);
+  if (status === 413) return new ApiError("payload-too-large", "Payload too large", 413);
+  if (status === 415) return new ApiError("unsupported-media", "Unsupported media type", 415);
+  if (status === 400 || status === 422) return new ApiError("validation", "Validation failed", status);
+  if (status >= 500) return new ApiError("server", "Server error", status);
+  return new ApiError("unexpected", `Request failed (${status})`, status);
+}
+
+export interface ApiUploadOptions {
+  token?: string;
+  /** Reports 0–100 while the request body is being sent. */
+  onProgress?: (percent: number) => void;
+  signal?: AbortSignal;
+}
+
+/**
+ * Multipart upload helper.
+ *
+ * Uses XMLHttpRequest because `fetch` cannot report upload progress. The
+ * Content-Type header is deliberately left unset so the browser can add the
+ * multipart boundary.
+ */
+export function apiUpload<T>(
+  path: string,
+  formData: FormData,
+  options: ApiUploadOptions = {},
+): Promise<T> {
+  return new Promise<T>((resolve, reject) => {
+    const xhr = new XMLHttpRequest();
+    xhr.open("POST", `${API_BASE_URL}${path}`);
+    xhr.setRequestHeader("Accept", "application/json");
+    if (options.token) xhr.setRequestHeader("Authorization", `Bearer ${options.token}`);
+
+    if (options.onProgress) {
+      xhr.upload.addEventListener("progress", (event) => {
+        if (event.lengthComputable) {
+          options.onProgress?.(Math.round((event.loaded / event.total) * 100));
+        }
+      });
+    }
+
+    const abort = () => xhr.abort();
+    options.signal?.addEventListener("abort", abort);
+
+    const cleanup = () => options.signal?.removeEventListener("abort", abort);
+
+    xhr.addEventListener("load", () => {
+      cleanup();
+      if (xhr.status < 200 || xhr.status >= 300) {
+        reject(errorForStatus(xhr.status));
+        return;
+      }
+      if (xhr.status === 204 || !xhr.responseText) {
+        resolve(undefined as T);
+        return;
+      }
+      try {
+        resolve(JSON.parse(xhr.responseText) as T);
+      } catch {
+        reject(new ApiError("unexpected", "Malformed JSON response", xhr.status));
+      }
+    });
+
+    xhr.addEventListener("error", () => {
+      cleanup();
+      reject(new ApiError("network", "Network request failed"));
+    });
+    xhr.addEventListener("abort", () => {
+      cleanup();
+      reject(new ApiError("network", "Upload cancelled"));
+    });
+
+    xhr.send(formData);
+  });
 }

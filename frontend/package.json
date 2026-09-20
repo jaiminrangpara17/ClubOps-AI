@@ -1,8 +1,7 @@
 {
   "name": "clubops-ai",
   "private": true,
-  "version": "1.0.0",
-  "description": "Next-Generation Autonomous Operations & Event Intelligence Platform for Clubs and Communities",
+  "version": "0.0.0",
   "type": "module",
   "scripts": {
     "dev": "vite",

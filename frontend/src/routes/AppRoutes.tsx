@@ -9,6 +9,7 @@ import NotFoundPage from "@/pages/NotFoundPage";
 import SettingsPage from "@/pages/SettingsPage";
 import EventAnnouncementsPage from "@/pages/event/EventAnnouncementsPage";
 import EventCopilotPage from "@/pages/event/EventCopilotPage";
+import DocumentDetailPage from "@/pages/event/DocumentDetailPage";
 import EventDocumentsPage from "@/pages/event/EventDocumentsPage";
 import EventMeetingsPage from "@/pages/event/EventMeetingsPage";
 import MeetingCreatePage from "@/pages/event/MeetingCreatePage";
@@ -49,6 +50,7 @@ export function AppRoutes() {
             <Route path="meetings/:meetingId" element={<MeetingDetailPage />} />
             <Route path="meetings/:meetingId/edit" element={<MeetingEditPage />} />
             <Route path="documents" element={<EventDocumentsPage />} />
+            <Route path="documents/:documentId" element={<DocumentDetailPage />} />
             <Route path="risks" element={<EventRisksPage />} />
             <Route path="announcements" element={<EventAnnouncementsPage />} />
             <Route path="ai" element={<EventCopilotPage />} />

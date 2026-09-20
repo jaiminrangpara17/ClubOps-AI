@@ -1,112 +1,74 @@
-# ⚡ ClubOps AI - Frontend Operations Hub
+# ⚡ ClubOps AI — Frontend Application
 
-<div align="center">
+[![React 19](https://img.shields.io/badge/React-19.2-61DAFB?style=flat-square&logo=react&logoColor=black)](https://react.dev/)
+[![TypeScript 5.9](https://img.shields.io/badge/TypeScript-5.9-3178C6?style=flat-square&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
+[![Vite 7](https://img.shields.io/badge/Vite-7.3-646CFF?style=flat-square&logo=vite&logoColor=white)](https://vitejs.dev/)
+[![Tailwind CSS v4](https://img.shields.io/badge/Tailwind_CSS-4.1-38B2AC?style=flat-square&logo=tailwind-css&logoColor=white)](https://tailwindcss.com/)
+[![License](https://img.shields.io/badge/License-MIT-blue.svg?style=flat-square)](../LICENSE)
 
-![ClubOps AI](https://img.shields.io/badge/ClubOps-Frontend%20Hub-4F46E5?style=for-the-badge&logo=react&logoColor=white)
-
-**Executive Operations Command Center, Event Intelligence, Task Boards, Volunteer Rostering & Meeting Intelligence**
-
-[![React](https://img.shields.io/badge/React-19.2-61DAFB?style=flat-square&logo=react&logoColor=black)](https://react.dev/)
-[![TypeScript](https://img.shields.io/badge/TypeScript-5.9-3178C6?style=flat-square&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
-[![Vite](https://img.shields.io/badge/Vite-7.3-646CFF?style=flat-square&logo=vite&logoColor=white)](https://vitejs.dev/)
-[![TailwindCSS](https://img.shields.io/badge/Tailwind_CSS-v4.1-38B2AC?style=flat-square&logo=tailwind-css&logoColor=white)](https://tailwindcss.com/)
-[![React Router](https://img.shields.io/badge/React_Router-v7.1-CA4245?style=flat-square&logo=react-router&logoColor=white)](https://reactrouter.com/)
-
-</div>
+**ClubOps AI Frontend** is a modern, responsive single-page web application engineered for campus clubs, event organizers, and student societies. It serves as the primary operations command hub for real-time logistics, task tracking, volunteer rostering, meeting intelligence, document vaults, risk governance, and AI-assisted workflows.
 
 ---
 
-## 📖 Overview
-
-The **ClubOps AI Frontend** is a modern, responsive web application engineered to serve as the unified operating system for club leads, event coordinators, volunteers, and faculty advisors. It combines a resilient multi-section dashboard, granular task boards, end-to-end volunteer management, AI-driven meeting intelligence, and an interactive design foundation.
-
----
-
-## ✨ Core Subsystems & Pages
+## 🌟 Key Subsystems & Features
 
 ### 📊 1. Operations Command Dashboard (`/dashboard`)
-- **Multi-Section Asynchronous Loading**: Independent section loaders (`useSectionData`) ensure a failure in one subsystem never causes a cascade failure across the dashboard.
-- **Executive AI Briefing (`AIDailyBrief.tsx`)**: Automated AI daily digest summarizing readiness score, volunteer staffing deficits, and critical path blockers.
-- **KPI Metrics & Risk Heatmaps (`OverviewStats.tsx`, `RiskSummary.tsx`)**: High/medium/low severity indicators, progress gauges, and budget tracking.
-- **Priority Tasks & Deadlines (`PriorityTasks.tsx`, `UpcomingDeadlines.tsx`)**: Real-time urgent action radar.
-- **Volunteer Health Snapshot (`VolunteerSnapshot.tsx`)**: Quick glimpse of departmental coverage and active volunteers.
+- **Executive AI Daily Briefing**: Automatic situational digests of blockers, unfilled shifts, and upcoming deadlines.
+- **Section Resilience**: Multi-section asynchronous loading (`useSectionData`) ensuring zero cascading failures.
+- **KPI Overview**: Live status counters for tasks, volunteer check-ins, permits, and active risks.
+- **State Export**: Export complete event state as JSON for backups and external reporting.
 
-### 📝 2. Meeting Intelligence Subsystem (`/events/:eventId/meetings/*`)
-- **Meeting Directory & Filtering (`/events/:eventId/meetings`)**:
-  - Filter by timeframe (*Upcoming*, *Past*, *All*), meeting status (*Scheduled*, *Held*, *Cancelled*), and AI processing status (*Not Processed*, *Processing*, *Completed*, *Failed*).
-  - Search by meeting title, agenda topics, and organizer name.
-  - Quick KPI stats: total meetings, upcoming sessions, processing queue, extracted decisions, and action items.
-- **Meeting Detail & Intelligence Hub (`/events/:eventId/meetings/:meetingId`)**:
-  - **Structured Agenda & Minutes**: Full meeting timeline, location, organizer, and participant badges.
-  - **Transcript Management**: Ingest and update meeting transcripts and raw notes.
-  - **AI Intelligence Processing**: Trigger async NLP extraction of **Key Decisions** and **Action Items** from raw transcript data.
-  - **1-Click Task Conversion (`createTaskFromActionItem`)**: Convert extracted action items directly into live operational tasks assigned to team members with due dates and priority tags.
-- **Meeting Creation & Editing (`/meetings/new`, `/meetings/:meetingId/edit`)**:
-  - Form validation with date pickers, participant multi-selectors, and location inputs.
+### 📋 2. Tasks & Workflow Tracker (`/events/:id/tasks`)
+- **Kanban & Table Views**: Interactive board (`Todo`, `In Progress`, `Blocked`, `Done`) and structured tabular data.
+- **Priority & Due Date Tracking**: Multi-tier priority management (`Critical`, `High`, `Medium`, `Low`).
+- **Urgent Action Surface**: Immediate highlighting of blocked and high-risk operational items.
 
-### 👥 3. Volunteer Management & Rostering (`/events/:eventId/volunteers/*`)
-- **Roster & Directory (`/events/:eventId/volunteers`)**: Search, filter by department (Stage, Registration, Logistics, Safety, Media, Hospitality), and status (`Confirmed`, `Pending`, `Unavailable`).
-- **Volunteer Profile View (`/events/:eventId/volunteers/:volunteerId`)**: Contact cards, assigned shifts, supervisor links, and emergency contacts.
-- **Volunteer Add & Edit (`/volunteers/new`, `/volunteers/:volunteerId/edit`)**: Rapid onboarding and assignment modifications with optimistic UI cache updates.
+### 👥 3. Volunteer Management Roster (`/events/:id/volunteers`)
+- **Departmental Roles**: Registration, Tech Crew, Stage, Hospitality, Media, Logistics, and Safety.
+- **Profile Detail & Shifts**: Roster directory, volunteer contact info, check-in status, and assigned tasks.
+- **Interactive Modals**: Rapid volunteer onboarding, inline edits, and shift assignment changes.
 
-### ✅ 4. Task Tracker & Kanban Board (`/events/:eventId/tasks`)
-- **Dual-View Workflow**: Kanban board columns (`To do`, `In progress`, `Blocked`, `Done`) and structured tabular view.
-- **Task Prioritization**: Multi-tier priority system (`Critical`, `High`, `Medium`, `Low`) with assignees and due dates.
-- **Create & Edit Tasks**: Modal drawer for creating and modifying task metadata.
+### 📝 4. Meeting Intelligence & Action Pipeline (`/events/:id/meetings`)
+- **Lifecycle & Agendas**: Schedule sessions, configure structured agendas, and record attendance.
+- **Transcript Ingestion**: Ingest raw meeting notes and transcripts.
+- **AI Extraction & 1-Click Task Creation**: Extract key decisions and automatically convert action items into live tasks.
 
-### 🤖 5. AI Copilot Hub (`/events/:eventId/ai`)
-- **Contextual Copilot Interface**: Interactive conversation canvas with pre-built prompt suggestions (*"What is blocking day-1 readiness?"*, *"Summarise open risks by severity"*, *"Draft an update for the committee"*).
-- **Grounded Responses**: Architecture ready to cite live event documents, tasks, and meeting decisions.
+### 📁 5. Document Hub & Asset Vault (`/events/:id/documents`)
+- **Categorized Storage**: Floor plans, run-of-show decks, permits, sponsor contracts, and volunteer guides.
+- **Multipart Uploads**: Real-time upload progress tracking via `apiUpload` (XHR) with file validation.
+- **Document Detail Views**: Preview metadata, size, upload timestamp, category tags, and access permissions.
+- **Instant Search & Filter**: Search documents by title, tags, or file type with immediate preview panels.
 
-### 🎨 6. Design System & Foundations (`/foundation`)
-- Semantic tokens: `canvas`, `surface`, `surface-subtle`, `surface-inset`, `brand`, `line`, `danger`, `warning`, `success`, `info`.
-- **Dark & Light Mode** toggle with system preference sync and persistent storage.
-- Atomic component showcase: `Button`, `Badge`, `Card`, `StatCard`, `Input`, `Dropdown`, `Breadcrumb`, `Progress`, `EmptyState`, `ErrorState`, `LoadingState`.
+### ⚠️ 6. Risk Register & Mitigation (`/events/:id/risks`)
+- **Severity & Impact Matrix**: Categorized across `Low`, `Medium`, `High`, and `Critical`.
+- **Mitigation Action Items**: Track mitigation owners, contingency strategies, and status updates.
 
----
+### 📢 7. Announcements & Broadcasts (`/events/:id/announcements`)
+- Target broadcasts specifically to Attendees, Volunteers, Organizers, or Sponsors.
 
-## 📁 Directory Structure
+### 🤖 8. AI Copilot Hub (`/events/:id/ai`)
+- Grounded query interface ready for RAG integrations to answer event questions with citation previews.
 
-```text
-frontend/
-├── src/
-│   ├── components/
-│   │   ├── auth/           # Protected route guards
-│   │   ├── common/         # Modals, capability previews, dismiss helpers
-│   │   ├── dashboard/      # Dashboard widgets (AIDailyBrief, RiskSummary, etc.)
-│   │   ├── event/          # Event forms and dialogs
-│   │   ├── layout/         # Header, Topbar, Sidebar, MobileNav, Layout wrappers
-│   │   ├── meeting/        # Meeting cards, filters, forms, intelligence panels
-│   │   ├── task/           # Task table, cards, forms, filters, badges
-│   │   ├── ui/             # Atomic design system components
-│   │   └── volunteer/      # Volunteer list, filters, forms, stats
-│   ├── context/            # AuthContext, EventContext, ThemeContext
-│   ├── data/               # In-memory mock repositories (Tasks, Volunteers, Meetings, Events)
-│   ├── hooks/              # Custom hooks (useMeetings, useVolunteers, useTasks, etc.)
-│   ├── lib/                # Formatters, auth utilities, status mappings
-│   ├── pages/              # Top-level page routes
-│   │   ├── event/          # Event sub-routes (Meetings, Tasks, Volunteers, AI, Risks, etc.)
-│   │   ├── DashboardPage.tsx
-│   │   ├── EventsPage.tsx
-│   │   ├── FoundationPage.tsx
-│   │   ├── LoginPage.tsx
-│   │   ├── SettingsPage.tsx
-│   │   └── NotFoundPage.tsx
-│   ├── routes/             # AppRoutes definition
-│   ├── services/           # Service layer with dual-mode (Mock API & REST HTTP API)
-│   ├── styles/             # Global CSS & Design Tokens
-│   ├── types/              # Comprehensive TypeScript definitions
-│   ├── App.tsx             # Root application orchestrator
-│   └── main.tsx            # React 19 entry point
-├── .env.example            # Environment variables template
-├── package.json            # Dependencies & scripts
-├── tsconfig.json           # TypeScript configuration
-└── vite.config.ts          # Vite build config
-```
+### 🎨 9. Design System & Theme Engine (`/foundation`)
+- **Dark Mode & Light Mode**: Seamless theme switching with system detection and persistence.
+- **Design Tokens**: Standardized palette (`canvas`, `surface`, `brand`, `line`, `danger`, `warning`, `success`).
+- **Atomic Components**: Fully accessible Button, Badge, Modal, Card, Dropdown, Input, Progress, and State handlers.
 
 ---
 
-## 🚀 Quick Start
+## 🛠️ Tech Stack & Dependencies
+
+- **Framework**: React 19.2 (Functional Components & Hooks)
+- **Language**: TypeScript 5.9 (Strict Type Safety)
+- **Bundler & Build Tool**: Vite 7.3 (`@vitejs/plugin-react`, `vite-plugin-singlefile`)
+- **Styling**: Tailwind CSS v4 + Custom CSS Token System (`@theme inline`)
+- **Icons**: Lucide React (`lucide-react`)
+- **Routing**: React Router DOM v7 (`HashRouter`)
+- **Utilities**: `clsx`, `tailwind-merge`
+
+---
+
+## 🚀 Getting Started
 
 ### 1. Install Dependencies
 ```bash
@@ -114,40 +76,48 @@ npm install
 ```
 
 ### 2. Environment Configuration
-Copy the sample environment file:
+Copy the example environment file:
 ```bash
 cp .env.example .env
 ```
 
-| Variable | Description | Default |
-| :--- | :--- | :--- |
-| `VITE_API_MODE` | `mock` for local offline development or `api` for live REST backend | `mock` |
-| `VITE_API_BASE_URL` | Base URL for the backend REST API | `http://localhost:8000/api` |
+| Variable | Default | Description |
+|---|---|---|
+| `VITE_API_MODE` | `mock` | Switch between `mock` (built-in offline data) and `api` (live backend endpoints) |
+| `VITE_API_BASE_URL` | `/api` | Base URL prefix for backend REST requests |
 
-### 3. Start Development Server
+### 3. Run Development Server
 ```bash
 npm run dev
 ```
-Open `http://localhost:5173` in your browser.
+Open [http://localhost:5173](http://localhost:5173) in your browser.
 
 ### 4. Build for Production
 ```bash
 npm run build
 ```
+The optimized single-file production bundle will be generated in `dist/`.
 
 ---
 
-## 🔐 Demo Accounts (Mock Mode)
+## 🔑 Demo Login Accounts
 
 | Role | Email | Password |
-| :--- | :--- | :--- |
-| **Event Lead** | `rahul@clubops.dev` | `clubops2026` |
+|---|---|---|
+| **Event Head** | `rahul@clubops.dev` | `clubops2026` |
 | **President** | `president@clubops.dev` | `clubops2026` |
-| **Volunteer** | `volunteer@clubops.dev` | `clubops2026` |
+| **Volunteer Coordinator** | `volunteer@clubops.dev` | `clubops2026` |
 | **Faculty Advisor** | `faculty@clubops.dev` | `clubops2026` |
+
+*(Note: In mock mode, any non-empty password is accepted for testing).*
 
 ---
 
-## 📄 License
+## 🔌 API Client Architecture
 
-Licensed under the [MIT License](../LICENSE).
+All network interactions pass through `src/services/http.ts`, providing:
+- Unified error taxonomy (`ApiError` with user-safe descriptions).
+- Automatic `401 Unauthorized` handling with `clubops:unauthorized` window events.
+- Request timeout protection (12-second ceiling) and abort signal propagation.
+- Multipart upload progress tracking (`apiUpload`).
+- Dual-mode switching (`apiMode.ts`): transparently fallback to high-fidelity mocks when live backend is offline.

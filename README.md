@@ -13,7 +13,7 @@
 [![TailwindCSS v4](https://img.shields.io/badge/Styling-Tailwind_CSS_v4-38B2AC?logo=tailwind-css&logoColor=white)](frontend/)
 [![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
-[Architecture](#-monorepo-architecture) • [Services](#-services-breakdown) • [Quick Start](#-quick-start-guide) • [Core Capabilities](#-core-platform-capabilities) • [Meeting Intelligence](#-meeting-intelligence--action-item-pipeline) • [Demo Logins](#-demo-login-accounts)
+[Architecture](#-monorepo-architecture) • [Services](#-services-breakdown) • [Quick Start](#-quick-start-guide) • [Core Capabilities](#-core-platform-capabilities) • [Meeting Intelligence](#-meeting-intelligence--action-item-pipeline) • [Document Vault](#-document-hub--asset-vault) • [Demo Logins](#-demo-login-accounts)
 
 </div>
 
@@ -23,7 +23,7 @@
 
 **ClubOps AI** is an end-to-end intelligent operations platform engineered to eliminate operational friction across collegiate clubs, student societies, hackathon organizers, and community organizations.
 
-It bridges event planning, volunteer coordination, Kanban task execution, meeting intelligence & action item extraction, risk governance, and executive decision-making — augmented with AI copilots and real-time operational analytics.
+It bridges event planning, volunteer coordination, Kanban task execution, meeting intelligence & action item extraction, document management, risk governance, and executive decision-making — augmented with AI copilots and real-time operational analytics.
 
 ---
 
@@ -31,7 +31,7 @@ It bridges event planning, volunteer coordination, Kanban task execution, meetin
 
 ```text
 ClubOps-AI/
-├── 🌐 frontend/          # React 19 web application (Vite, TypeScript, Tailwind CSS v4, Meeting & Volunteer Engines)
+├── 🌐 frontend/          # React 19 web application (Vite, TypeScript, Tailwind CSS v4, Meeting, Volunteer & Document Subsystems)
 ├── ⚙️ backend/           # Core FastAPI REST backend & PostgreSQL integration
 ├── 🧠 ai/                # AI Engine: LLM integrations, Event Planner, validators & prompts
 ├── 🐳 docker-compose.yml # PostgreSQL 16 local database development environment
@@ -48,6 +48,7 @@ graph TD
         Frontend --> TaskMod[✅ Kanban Task Tracker]
         Frontend --> VolMod[👥 Volunteer Rostering]
         Frontend --> MeetMod[📝 Meeting Intelligence & Minutes]
+        Frontend --> DocMod[📁 Document Hub & Asset Vault]
         Frontend --> CopilotUI[🤖 AI Copilot Interface]
         Frontend --> Foundation[🎨 Design System & Theme Engine]
     end
@@ -66,7 +67,7 @@ graph TD
 
 | Service | Technology | Description | Documentation |
 | :--- | :--- | :--- | :--- |
-| **Frontend** | React 19, TypeScript 5.9, Vite 7.3, Tailwind CSS v4 | Executive operations command center, modular dashboard, Kanban tasks, volunteer management, meeting intelligence subsystem, risk matrix, and AI copilot interface. | [Frontend Guide](frontend/README.md) |
+| **Frontend** | React 19, TypeScript 5.9, Vite 7.3, Tailwind CSS v4 | Executive operations command center, modular dashboard, Kanban tasks, volunteer management, meeting intelligence subsystem, document vault, risk matrix, and AI copilot interface. | [Frontend Guide](frontend/README.md) |
 | **Backend** | Python 3.11, FastAPI, Uvicorn, PostgreSQL, SQLAlchemy | RESTful API endpoints for club governance, member authentication, event persistence, and operational records. | [Backend Guide](backend/README.md) |
 | **AI Engine** | Python 3.11, Pydantic, LLM Client | Domain-specific LLM intelligence for event schedule generation, action validation, automated risk detection, and daily briefings. | [AI Engine Guide](ai/README.md) |
 | **Database** | PostgreSQL 16 Alpine (Docker) | Containerized relational database for persistent club operations. | [docker-compose.yml](docker-compose.yml) |
@@ -131,24 +132,30 @@ Interactive API documentation will be available at `http://localhost:8000/docs`.
 - **AI-Powered Intelligence Extraction**: Automatically extract **Key Decisions** and **Action Items** from meeting transcripts.
 - **1-Click Task Creation**: Convert extracted action items directly into live operational tasks with assignees and due dates.
 
-### 👥 3. Volunteer Management Subsystem (`/events/:id/volunteers`)
+### 📁 3. Document Hub & Asset Vault (`/events/:id/documents`)
+- **Centralized Event Repository**: Organize run-of-show decks, event schedules, permits, floor plans, and sponsorship collateral.
+- **Multipart Upload Engine**: Dedicated file uploader with real-time percentage progress (`apiUpload`) and client-side format validation.
+- **Rich Document Details**: Inspect file metadata, upload timeline, access tier permissions, and category tags.
+- **Search & Quick Previews**: Real-time content filtering with dedicated preview slide-outs.
+
+### 👥 4. Volunteer Management Subsystem (`/events/:id/volunteers`)
 - **Directory & Rosters**: Search and filter by departmental role (Stage, Registration, Logistics, Safety, Media, Hospitality) and availability status (`Confirmed`, `Pending`, `Unavailable`).
 - **Volunteer Detail Profiles**: Contact records, shift schedules, assigned tasks, and supervisor details.
 - **Create & Edit Workflows**: Rapid onboarding and assignment modifications with optimistic UI cache updates.
 
-### 📋 4. Task Tracker & Kanban Boards (`/events/:id/tasks`)
+### 📋 5. Task Tracker & Kanban Boards (`/events/:id/tasks`)
 - **Dual-View Workflow**: Toggle between interactive Kanban columns (`To do`, `In progress`, `Blocked`, `Done`) and structured tabular views.
 - **Prioritization Matrix**: Multi-tier priority system (`Critical`, `High`, `Medium`, `Low`) with assignees and due dates.
 - **Urgent Action Queue**: Automatically surface blocked or overdue tasks across all active teams.
 
-### 🛡️ 5. Risk & Hazard Register (`/events/:id/risks`)
+### 🛡️ 6. Risk & Hazard Register (`/events/:id/risks`)
 - Severity matrix (High, Medium, Low) with likelihood indicators and mitigation action trackers.
 - Predictive blocker detection and safety advisory logging.
 
-### 🤖 6. AI Copilot Hub (`/events/:id/ai`)
+### 🤖 7. AI Copilot Hub (`/events/:id/ai`)
 - Grounded conversation interface answering operational queries from live event data with citation previews.
 
-### 🎨 7. Design System & Foundations (`/foundation`)
+### 🎨 8. Design System & Foundations (`/foundation`)
 - Semantic color tokens (`canvas`, `surface`, `brand`, `line`, `danger`, `warning`, `success`, `info`).
 - **Dark Mode / Light Mode** theme switching with system preference detection and localStorage persistence.
 - Complete UI atomic component suite (`Button`, `Badge`, `Card`, `StatCard`, `Input`, `Dropdown`, `Breadcrumb`, `Progress`, `EmptyState`, `ErrorState`, `LoadingState`).

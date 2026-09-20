@@ -1,83 +1,192 @@
-import { FileCheck2, FileText, FolderOpen, Upload } from "lucide-react";
-import { PlannedCapabilities } from "@/components/common/PlannedCapabilities";
+import { AlertTriangle, CheckCircle2, FileText, Loader2, Upload } from "lucide-react";
+import { useMemo, useState } from "react";
+import { useParams } from "react-router-dom";
 import { PreviewNotice } from "@/components/common/PreviewNotice";
+import {
+  DocumentCards,
+  DocumentContentSearch,
+  DocumentFilters,
+  DocumentTable,
+  DocumentUpload,
+} from "@/components/document";
 import {
   Button,
   Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
   EmptyState,
+  ErrorState,
   PageHeader,
+  Skeleton,
   StatCard,
 } from "@/components/ui";
-
-const CATEGORIES = [
-  { id: "permits", name: "Permits & licences", detail: "Venue, safety and noise approvals" },
-  { id: "contracts", name: "Contracts", detail: "Suppliers, sponsors and vendors" },
-  { id: "runsheets", name: "Run sheets", detail: "Schedules and crew briefing packs" },
-];
+import { useAuth } from "@/context/AuthContext";
+import {
+  useDocumentCapabilities,
+  useDocumentContentSearch,
+  useDocumentMutations,
+  useDocuments,
+} from "@/hooks/useDocuments";
+import {
+  computeDocumentStats,
+  EMPTY_DOCUMENT_FILTERS,
+  filterDocuments,
+  sortDocuments,
+} from "@/lib/document";
+import { isMockApi } from "@/services/apiMode";
+import type { DocumentFilters as DocumentFiltersData } from "@/types";
 
 export default function EventDocumentsPage() {
+  const { eventId = "" } = useParams();
+  const { user } = useAuth();
+  const { capabilities } = useDocumentCapabilities(eventId);
+  const { documents, error, isLoading, refetch } = useDocuments(eventId);
+  const mutations = useDocumentMutations();
+  const contentSearch = useDocumentContentSearch(eventId);
+
+  const [filters, setFilters] = useState<DocumentFiltersData>(EMPTY_DOCUMENT_FILTERS);
+  const [uploadOpen, setUploadOpen] = useState(false);
+
+  const sorted = useMemo(() => sortDocuments(documents), [documents]);
+  const filtered = useMemo(() => filterDocuments(sorted, filters), [sorted, filters]);
+  const stats = useMemo(() => computeDocumentStats(documents), [documents]);
+  const hasFilters = JSON.stringify(filters) !== JSON.stringify(EMPTY_DOCUMENT_FILTERS);
+
+  // UX-only gating; the backend remains authoritative and 403s are handled by the API client.
+  const hasWriteRole =
+    user?.role === "PRESIDENT" || user?.role === "EVENT_HEAD" || user?.role === "FACULTY";
+  const canUpload = Boolean(capabilities?.upload) && hasWriteRole;
+
+  const handleUpload = async (file: File) => {
+    try {
+      await mutations.upload(eventId, file);
+      setUploadOpen(false);
+      refetch();
+    } catch {
+      // mutations.error carries the user-safe message and stays visible in the panel.
+    }
+  };
+
   return (
     <div className="space-y-6">
       <PageHeader
         size="md"
         divider={false}
         title="Documents"
-        description="Store permits, contracts, run sheets and policies in one library."
+        description="Keep event knowledge organized and accessible."
         actions={
-          <Button leadingIcon={Upload} disabled title="Uploads ship with the documents module">
-            Upload document
-          </Button>
+          canUpload ? (
+            <Button leadingIcon={Upload} onClick={() => setUploadOpen((open) => !open)}>
+              Upload document
+            </Button>
+          ) : undefined
         }
       />
 
-      <PreviewNotice />
+      {isMockApi && (
+        <PreviewNotice>
+          <span className="font-medium text-fg">Development data.</span> Documents are served by the
+          isolated document adapter. There is no OCR, extraction model or search index — processing
+          is simulated and extracted text is hand-written sample content.
+        </PreviewNotice>
+      )}
 
-      <div className="grid gap-4 sm:grid-cols-3">
-        <StatCard label="Stored files" value="—" hint="Awaiting data" icon={FileText} tone="brand" />
-        <StatCard label="Awaiting signature" value="—" hint="Awaiting data" icon={FileCheck2} tone="warning" />
-        <StatCard label="Expiring soon" value="—" hint="Awaiting data" icon={FileCheck2} tone="danger" />
-      </div>
+      {canUpload && uploadOpen && capabilities && (
+        <DocumentUpload
+          capabilities={capabilities}
+          isUploading={mutations.isBusy}
+          progress={mutations.uploadProgress}
+          serverError={mutations.error}
+          onUpload={handleUpload}
+          onDismiss={() => {
+            mutations.clearError();
+            setUploadOpen(false);
+          }}
+        />
+      )}
 
-      <div className="grid gap-4 lg:grid-cols-3">
-        <Card className="lg:col-span-2">
-          <CardHeader>
-            <CardTitle>Library structure</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="grid gap-3 sm:grid-cols-3">
-              {CATEGORIES.map((category) => (
-                <div
-                  key={category.id}
-                  className="rounded-control border border-dashed border-line-strong bg-surface-subtle p-3.5"
-                >
-                  <span className="flex h-8 w-8 items-center justify-center rounded-control bg-surface text-fg-subtle">
-                    <FolderOpen width={15} height={15} aria-hidden />
-                  </span>
-                  <p className="mt-2 text-sm font-medium text-fg">{category.name}</p>
-                  <p className="mt-0.5 text-xs text-fg-muted">{category.detail}</p>
-                </div>
-              ))}
-            </div>
+      {isLoading ? (
+        <>
+          <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+            {Array.from({ length: 4 }).map((_, index) => (
+              <Skeleton key={index} className="h-28 rounded-card" />
+            ))}
+          </div>
+          <Card padding="md" className="space-y-3">
+            {Array.from({ length: 4 }).map((_, index) => (
+              <Skeleton key={index} className="h-12 rounded-control" />
+            ))}
+          </Card>
+        </>
+      ) : error ? (
+        <ErrorState
+          title="Unable to load documents"
+          description={error}
+          onRetry={refetch}
+          retryLabel="Retry"
+        />
+      ) : documents.length === 0 ? (
+        <EmptyState
+          variant="page"
+          icon={FileText}
+          title="No documents yet"
+          description="Upload permits, contracts and run sheets so the whole team works from the same source."
+          actions={
+            canUpload ? (
+              <Button leadingIcon={Upload} onClick={() => setUploadOpen(true)}>
+                Upload document
+              </Button>
+            ) : undefined
+          }
+        />
+      ) : (
+        <>
+          <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+            <StatCard label="Documents" value={stats.total} hint="In this event" icon={FileText} tone="brand" />
+            <StatCard label="Processing" value={stats.processing} hint="Queued or running" icon={Loader2} tone="warning" />
+            <StatCard label="Ready" value={stats.ready} hint="Processing complete" icon={CheckCircle2} tone="success" />
+            <StatCard label="Failed" value={stats.failed} hint="Needs attention" icon={AlertTriangle} tone="danger" />
+          </div>
+
+          {capabilities?.contentSearch && (
+            <DocumentContentSearch
+              eventId={eventId}
+              matches={contentSearch.matches}
+              query={contentSearch.query}
+              error={contentSearch.error}
+              isSearching={contentSearch.isSearching}
+              onSearch={contentSearch.search}
+              onReset={contentSearch.reset}
+              isSampleIndex={isMockApi}
+            />
+          )}
+
+          <Card padding="md">
+            <DocumentFilters
+              filters={filters}
+              onChange={setFilters}
+              total={documents.length}
+              shown={filtered.length}
+            />
+          </Card>
+
+          {filtered.length === 0 && hasFilters ? (
             <EmptyState
               icon={FileText}
-              title="No documents uploaded"
-              description="Uploaded files will be versioned, categorised and linked to the tasks or risks that depend on them."
+              title="No documents match these filters"
+              description="Try changing or clearing your filters."
+              actions={
+                <Button variant="outline" onClick={() => setFilters(EMPTY_DOCUMENT_FILTERS)}>
+                  Clear filters
+                </Button>
+              }
             />
-          </CardContent>
-        </Card>
-
-        <PlannedCapabilities
-          items={[
-            "Drag-and-drop upload with versioning",
-            "Expiry and signature reminders",
-            "Category and tag based filtering",
-            "Document references from tasks and risks",
-          ]}
-        />
-      </div>
+          ) : (
+            <>
+              <DocumentTable eventId={eventId} documents={filtered} />
+              <DocumentCards eventId={eventId} documents={filtered} />
+            </>
+          )}
+        </>
+      )}
     </div>
   );
 }
