@@ -18,6 +18,7 @@ from app.core.exceptions import (
     AIClientError,
     AIClientTimeoutError,
     AIClientValidationError,
+    redact_secrets,
 )
 from app.schemas.action_engine import ActionEngineRequest, ActionProposalList
 from app.schemas.communication import (
@@ -45,17 +46,31 @@ def _dump_payload(payload: BaseModel | dict[str, Any]) -> dict[str, Any]:
     """Ensure payload is serializable dictionary."""
     if isinstance(payload, BaseModel):
         return payload.model_dump(mode="json")
-    return payload
+    if isinstance(payload, dict):
+        return payload
+    raise AIClientValidationError(
+        f"Expected BaseModel or dict payload, got {type(payload).__name__}"
+    )
 
 
 def _handle_response_error(response: httpx.Response, endpoint: str) -> None:
     """Evaluate response status and raise typed client error if status code >= 400."""
     if response.is_success:
         return
-    text = response.text
+    text = redact_secrets(response.text)
     if response.status_code == 422:
         raise AIClientValidationError(
             f"Validation error calling {endpoint} (HTTP 422): {text}",
+            detail=text,
+        )
+    if response.status_code == 504:
+        raise AIClientTimeoutError(
+            f"AI service call {endpoint} timed out (HTTP 504): {text}",
+            detail=text,
+        )
+    if response.status_code == 503:
+        raise AIClientConnectionError(
+            f"AI service call {endpoint} unavailable (HTTP 503): {text}",
             detail=text,
         )
     raise AIClientError(

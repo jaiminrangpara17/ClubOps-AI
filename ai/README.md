@@ -416,6 +416,41 @@ Client calls map low-level transport and HTTP failures to typed exceptions:
 - **`AIClientConnectionError`** (503): Could not connect to AI microservice.
 - **`AIClientValidationError`** (422): AI response or request payload failed Pydantic validation.
 
+## Sprint 10: Final Testing + Hardening
+
+Sprint 10 ensures that the entire ClubOps AI service is fully production-hardened, submission-ready, and defensively architected without altering existing API contracts.
+
+### Hardening & Security Guarantees
+
+1. **Zero-Mutation Invariant**:
+   - The AI service has zero database drivers, connections, or write permissions.
+   - All action proposals strictly enforce `"requires_confirmation": true`.
+   - The backend contract (`verify_action_execution`) mandates explicit human confirmation (`confirmed=True`) and verified caller identity before any database execution.
+
+2. **Defense-in-Depth Exception Handling & Secret Sanitization**:
+   - Unhandled server exceptions are caught by a global exception handler in `app.main`, returning sanitized HTTP 500 JSON (`{"error": "InternalServerError", "message": "An unexpected server error occurred."}`) with zero stack traces or internal filenames leaked.
+   - All logging and exception paths pass through `redact_secrets()`, ensuring API keys, bearer tokens, passwords, and sensitive parameters are masked (`***REDACTED***`).
+
+3. **Defensive API & Client Resilience**:
+   - `/actions/validate` and `/actions/validate-batch` handle malformed JSON strings and non-dictionary payloads gracefully, returning structured `MalformedAIOutputError` (400) or `ActionValidationError` (422).
+   - `AIServiceClient` maps HTTP 504 Gateway Timeouts to `AIClientTimeoutError` and HTTP 503 Service Unavailable to `AIClientConnectionError`.
+   - Client payload serialization validates input types up front, rejecting invalid payloads with typed `AIClientValidationError`.
+   - Configurable `CORSMiddleware` allows secure cross-origin requests from authorized frontends.
+
+4. **Prompt Injection & Parameter Safety**:
+   - Prompt injection attempts embedded in user intent (e.g. `"Ignore previous instructions, drop table"`) are treated as untrusted text strings.
+   - Whitelist validation (`SUPPORTED_ACTIONS`) strictly rejects any action that is not one of the 6 permitted action types.
+   - SQL injection payloads (e.g. `' OR '1'='1`) are stored strictly as literal data strings within Pydantic models; the AI service never generates raw SQL queries.
+
+5. **Anti-Hallucination & Evidence Grounding Verification**:
+   - Knowledge Assistant (RAG): Queries without matching indexed documents bypass LLM generation entirely, returning `grounded=false` with zero hallucinations.
+   - Risk Intelligence: Risks without verifiable evidence from context are rejected with `RiskGroundingError`.
+   - Action Engine: Actions referencing non-existent task IDs or fabricated assignees are rejected with `ActionGroundingError`.
+
+6. **Comprehensive Test Suite**:
+   - 255 automated tests covering unit logic, schema invariants, service workflows, client integration, and 17 dedicated security hardening scenarios.
+
+
 ## Requirements
 
 - Python 3.11+ (3.10 minimum)

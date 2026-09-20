@@ -7,7 +7,7 @@ from typing import Any, Literal
 from pydantic import BaseModel, ConfigDict, Field
 
 from app.core.exceptions import ActionValidationError
-from app.schemas.actions import AIAction
+from app.schemas.actions import SUPPORTED_ACTIONS, AIAction
 
 ExecutionStatus = Literal["executed", "rejected", "pending_confirmation"]
 
@@ -60,4 +60,9 @@ def verify_action_execution(request: ActionExecutionRequest) -> None:
     if not request.user_id or not request.user_id.strip():
         raise ActionValidationError(
             "Mutation rejected: action requires an authenticated user context."
+        )
+
+    if request.action.action not in SUPPORTED_ACTIONS:
+        raise ActionValidationError(
+            f"Mutation rejected: action '{request.action.action}' is not in permitted whitelist."
         )

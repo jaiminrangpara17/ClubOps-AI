@@ -8,11 +8,16 @@ from contextlib import asynccontextmanager
 from typing import Any
 
 from fastapi import FastAPI, Request
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
 from app import __version__
 from app.core.config import get_settings
-from app.core.exceptions import AIServiceError
+from app.core.exceptions import (
+    ActionValidationError,
+    AIServiceError,
+    MalformedAIOutputError,
+)
 from app.core.llm import close_llm_service
 from app.schemas.action_engine import ActionEngineRequest, ActionProposalList
 from app.schemas.communication import (
@@ -68,12 +73,30 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 
 @app.exception_handler(AIServiceError)
 async def ai_service_error_handler(_: Request, exc: AIServiceError) -> JSONResponse:
     """Return safe, already-redacted error payloads (never leak secrets)."""
     logger.error("%s: %s", type(exc).__name__, exc.message)
     return JSONResponse(status_code=exc.status_code, content=exc.to_dict())
+
+
+@app.exception_handler(Exception)
+async def unhandled_exception_handler(_: Request, exc: Exception) -> JSONResponse:
+    """Catch unexpected errors, log securely, and return safe 500 without leaking tracebacks."""
+    logger.exception("Unhandled server error: %s", exc)
+    return JSONResponse(
+        status_code=500,
+        content={"error": "InternalServerError", "message": "An unexpected server error occurred."},
+    )
 
 
 @app.get("/health", tags=["system"], summary="Service health check")
@@ -178,7 +201,12 @@ async def generate_briefing(request: BriefingRequest) -> DailyBriefing:
 )
 async def validate_action(request: Request) -> dict[str, Any]:
     """Validate raw AI output as a safe, strictly typed AIAction object."""
-    raw_action = await request.json()
+    try:
+        raw_action = await request.json()
+    except Exception:
+        raise MalformedAIOutputError("Request body must be valid JSON.") from None
+    if not isinstance(raw_action, dict):
+        raise ActionValidationError("Action payload must be a JSON object.")
     action = validate_ai_action(raw_action)
     return action.model_dump(mode="json")
 
@@ -190,6 +218,11 @@ async def validate_action(request: Request) -> dict[str, Any]:
 )
 async def validate_action_batch(request: Request) -> list[dict[str, Any]]:
     """Validate list of raw actions against permitted whitelist."""
-    raw_actions = await request.json()
+    try:
+        raw_actions = await request.json()
+    except Exception:
+        raise MalformedAIOutputError("Request body must be valid JSON.") from None
+    if not isinstance(raw_actions, list):
+        raise ActionValidationError("Batch action payload must be a JSON array.")
     actions = validate_ai_actions(raw_actions)
     return [a.model_dump(mode="json") for a in actions]
