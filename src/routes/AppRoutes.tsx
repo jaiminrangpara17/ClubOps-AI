@@ -8,6 +8,7 @@ import LoginPage from "@/pages/LoginPage";
 import RegisterPage from "@/pages/RegisterPage";
 import NotFoundPage from "@/pages/NotFoundPage";
 import SettingsPage from "@/pages/SettingsPage";
+import HelpPage from "@/pages/HelpPage";
 import EventAnnouncementsPage from "@/pages/event/EventAnnouncementsPage";
 import AnnouncementCreatePage from "@/pages/event/AnnouncementCreatePage";
 import AnnouncementDetailPage from "@/pages/event/AnnouncementDetailPage";
@@ -76,6 +77,7 @@ export function AppRoutes() {
           </Route>
 
           <Route path="settings" element={<SettingsPage />} />
+          <Route path="help" element={<HelpPage />} />
           <Route path="foundation" element={<FoundationPage />} />
 
           <Route path="404" element={<NotFoundPage />} />

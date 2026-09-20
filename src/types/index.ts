@@ -76,6 +76,7 @@ export type {
   CopilotCapabilities,
   CopilotStatus,
 } from "./ai";
+export type { HelpArticle, HelpFaq, TroubleshootingItem } from "./help";
 export type {
   Announcement,
   AnnouncementStatus,

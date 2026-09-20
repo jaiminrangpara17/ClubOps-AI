@@ -94,10 +94,10 @@ export function SidebarContent({ onNavigate, onClose }: SidebarProps) {
           <Palette width={17} height={17} aria-hidden />
           <span>Design foundation</span>
         </Link>
-        <a href="#support" className={FOOTER_LINK}>
+        <Link to="/help" onClick={onNavigate} className={FOOTER_LINK}>
           <LifeBuoy width={17} height={17} aria-hidden />
           <span>Help &amp; support</span>
-        </a>
+        </Link>
       </div>
     </div>
   );
