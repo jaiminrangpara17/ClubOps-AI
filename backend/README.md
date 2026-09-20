@@ -5,6 +5,8 @@
 [![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16-4169E1?logo=postgresql&logoColor=white)](https://www.postgresql.org/)
 [![Tests](https://img.shields.io/badge/tests-144%20passed-brightgreen)](#18-running-tests)
 [![Submission Status](https://img.shields.io/badge/submission-frozen%20%26%20verified-success)](#submission-package-artifacts)
+[![Release](https://img.shields.io/badge/release-v1.0.0--final-blue)](https://github.com/jaiminrangpara17/ClubOps-AI/releases/tag/v1.0.0-final)
+
 
 The **ClubOps AI Backend** is a production-hardened RESTful API built with FastAPI, PostgreSQL 16, and SQLAlchemy 2.0. It provides unified operational management for university and community organizations, featuring JWT authentication, role-based access control, club/member/event lifecycles, real-time attendance analytics, and a grounded AI intelligence engine.
 
