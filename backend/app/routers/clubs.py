@@ -62,3 +62,50 @@ def get_club(
         )
 
     return club
+
+
+@router.put("/{club_id}", response_model=ClubResponse)
+def update_club(
+    club_id: int,
+    club_data: ClubCreate,
+    db: Session = Depends(get_db),
+):
+    club = db.get(Club, club_id)
+
+    if club is None:
+        raise HTTPException(
+            status_code=404,
+            detail="Club not found",
+        )
+
+    club.name = club_data.name
+    club.description = club_data.description
+
+    try:
+        db.commit()
+        db.refresh(club)
+    except IntegrityError:
+        db.rollback()
+        raise HTTPException(
+            status_code=409,
+            detail="A club with this name already exists",
+        )
+
+    return club
+
+
+@router.delete("/{club_id}", status_code=204)
+def delete_club(
+    club_id: int,
+    db: Session = Depends(get_db),
+):
+    club = db.get(Club, club_id)
+
+    if club is None:
+        raise HTTPException(
+            status_code=404,
+            detail="Club not found",
+        )
+
+    db.delete(club)
+    db.commit()
