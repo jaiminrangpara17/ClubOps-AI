@@ -20,6 +20,7 @@ import { Badge, Button, ErrorState, PageHeader } from "@/components/ui";
 import { useAuth } from "@/context/AuthContext";
 import { useEventContext } from "@/context/EventContext";
 import { useSectionData } from "@/hooks/useSectionData";
+import { useAiActionsCount } from "@/hooks/useAiActions";
 import { getUserRoleLabel } from "@/lib/auth";
 import { isMockApi } from "@/services/apiMode";
 import { dashboardService } from "@/services/dashboardService";
@@ -91,6 +92,7 @@ export default function DashboardPage() {
 
   const eventId = summary.data?.eventId ?? currentEventId;
   const hasEvent = hasActiveEvent && summary.data?.event !== null;
+  const aiActionCount = useAiActionsCount(eventId);
   const refreshingCount = [
     summary,
     priorities,
@@ -125,6 +127,11 @@ export default function DashboardPage() {
             <Badge tone={isMockApi ? "warning" : "success"}>
               {isMockApi ? "Sample data" : "Live data"}
             </Badge>
+            {aiActionCount > 0 && (
+              <Link to={`/events/${eventId}/ai/actions`}>
+                <Badge tone="warning">{aiActionCount} AI approvals pending</Badge>
+              </Link>
+            )}
           </>
         }
         actions={

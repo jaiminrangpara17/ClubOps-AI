@@ -12,6 +12,8 @@ import AnnouncementCreatePage from "@/pages/event/AnnouncementCreatePage";
 import AnnouncementDetailPage from "@/pages/event/AnnouncementDetailPage";
 import AnnouncementEditPage from "@/pages/event/AnnouncementEditPage";
 import EventCopilotPage from "@/pages/event/EventCopilotPage";
+import AiActionReviewPage from "@/pages/event/AiActionReviewPage";
+import AiActionsPage from "@/pages/event/AiActionsPage";
 import DocumentDetailPage from "@/pages/event/DocumentDetailPage";
 import EventDocumentsPage from "@/pages/event/EventDocumentsPage";
 import EventMeetingsPage from "@/pages/event/EventMeetingsPage";
@@ -66,6 +68,8 @@ export function AppRoutes() {
             <Route path="announcements/:announcementId" element={<AnnouncementDetailPage />} />
             <Route path="announcements/:announcementId/edit" element={<AnnouncementEditPage />} />
             <Route path="ai" element={<EventCopilotPage />} />
+            <Route path="ai/actions" element={<AiActionsPage />} />
+            <Route path="ai/actions/:actionId" element={<AiActionReviewPage />} />
             <Route path="*" element={<NotFoundPage />} />
           </Route>
 

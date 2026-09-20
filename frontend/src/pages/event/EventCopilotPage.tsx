@@ -1,6 +1,6 @@
-import { Bot, Loader2, RotateCcw, ShieldCheck } from "lucide-react";
+import { Bot, Loader2, RotateCcw, ShieldCheck, ListChecks } from "lucide-react";
 import { useEffect, useRef } from "react";
-import { useParams } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 import { PreviewNotice } from "@/components/common/PreviewNotice";
 import { CopilotComposer, CopilotMessageBubble } from "@/components/ai";
 import { Badge, Button, Card, ErrorState, PageHeader, Skeleton } from "@/components/ui";
@@ -44,11 +44,18 @@ export default function EventCopilotPage() {
           ) : undefined
         }
         actions={
-          copilot.canChat && copilot.messages.length > 0 ? (
-            <Button variant="outline" leadingIcon={RotateCcw} onClick={() => void copilot.clear()} disabled={copilot.isBusy}>
-              New conversation
-            </Button>
-          ) : undefined
+          <div className="flex flex-wrap items-center gap-2">
+            <Link to={`/events/${eventId}/ai/actions`}>
+              <Button variant="outline" leadingIcon={ListChecks}>
+                {copilot.capabilities?.suggestedActions ? "Review actions" : "Suggestions"}
+              </Button>
+            </Link>
+            {copilot.canChat && copilot.messages.length > 0 ? (
+              <Button variant="outline" leadingIcon={RotateCcw} onClick={() => void copilot.clear()} disabled={copilot.isBusy}>
+                New conversation
+              </Button>
+            ) : null}
+          </div>
         }
       />
 

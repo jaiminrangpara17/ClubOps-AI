@@ -12,7 +12,7 @@
 
 **An end-to-end intelligent operations platform engineered to eliminate operational friction across collegiate clubs, student societies, hackathons, and event teams.**
 
-[Architecture](#-monorepo-architecture) • [Core Subsystems](#-core-platform-subsystems) • [Quick Start](#-quick-start-guide) • [Demo Accounts](#-demo-login-accounts) • [Tech Stack](#-services-breakdown)
+[Architecture](#-monorepo-architecture) • [Core Subsystems](#-core-platform-subsystems) • [AI Review Queue](#-9-ai-action-approval--review-queue-eventsidai-actions) • [Quick Start](#-quick-start-guide) • [Demo Accounts](#-demo-login-accounts) • [Tech Stack](#-services-breakdown)
 
 </div>
 
@@ -29,7 +29,8 @@
 - 📁 **Document Asset Vault** with multipart progress uploads and category tagging.
 - 🛡️ **Risk Governance Matrix** with severity scoring, mitigation tracking, and task linking.
 - 📢 **Announcements & Broadcasts** with multi-channel targeting, pinned alerts, and read confirmations.
-- 🤖 **AI Copilot** with grounded context reasoning across event data and day-1 readiness audits.
+- 🤖 **AI Operations Copilot** with grounded context reasoning across event data and day-1 readiness audits.
+- ⚡ **Human-in-the-Loop AI Action Review** with before/after diffs, one-click execution, and rejection auditing.
 - 🎨 **Modern Design System** with dark/light theme switching and responsive mobile navigation.
 
 ---
@@ -59,6 +60,7 @@ graph TD
         Frontend --> RiskMod[🛡️ Risk Governance & Mitigation]
         Frontend --> AnnounceMod[📢 Announcements & Broadcasts]
         Frontend --> CopilotUI[🤖 AI Copilot Interface]
+        Frontend --> ActionQueue[⚡ AI Action Review & Approval Queue]
         Frontend --> Foundation[🎨 Design System & Theme Engine]
     end
     
@@ -116,7 +118,12 @@ graph TD
 - **Grounded Event QA**: Context-aware queries across tasks, risks, and meeting logs.
 - **Automated Drafting**: Draft agendas, risk summaries, volunteer briefings, and post-event retrospective reports.
 
-### 🎨 9. Design System & Theme Engine (`/foundation`)
+### ⚡ 9. AI Action Approval & Review Queue (`/events/:id/ai/actions`)
+- **Human-in-the-Loop Governance**: Review AI-suggested operational modifications with authoritative before/after diffs.
+- **Multi-Entity Action Support**: Create tasks, update status/priority, assign volunteers, update risk status, and stage announcements.
+- **Safe Execution & Audit Trail**: Approve actions to execute downstream mutations across module records or reject with recorded reasoning.
+
+### 🎨 10. Design System & Theme Engine (`/foundation`)
 - **Design Tokens**: Semantic color tokens (`canvas`, `surface`, `brand`, `line`, `danger`, `warning`, `success`, `info`).
 - **Dark Mode / Light Mode**: System preference detection and instant manual switching.
 - **Atomic UI Kit**: Complete suite of accessible primitive components (`Button`, `Badge`, `Card`, `StatCard`, `Input`, `Dropdown`, `Breadcrumb`, `Progress`, `EmptyState`, `ErrorState`, `LoadingState`).
@@ -127,7 +134,7 @@ graph TD
 
 | Service | Technology | Description | Documentation |
 | :--- | :--- | :--- | :--- |
-| **Frontend** | React 19, TypeScript 5.9, Vite 7.3, Tailwind CSS v4 | Executive operations command center, modular dashboard, Kanban tasks, volunteer management, meeting intelligence, announcements, document vault, risk matrix, and AI copilot. | [Frontend Guide](frontend/README.md) |
+| **Frontend** | React 19, TypeScript 5.9, Vite 7.3, Tailwind CSS v4 | Executive operations command center, modular dashboard, Kanban tasks, volunteer management, meeting intelligence, announcements, document vault, risk matrix, and AI copilot with action review. | [Frontend Guide](frontend/README.md) |
 | **Backend** | Python 3.11, FastAPI, Uvicorn, PostgreSQL, SQLAlchemy | RESTful API endpoints for club governance, member authentication, event persistence, and operational records. | [Backend Guide](backend/README.md) |
 | **AI Engine** | Python 3.11, Pydantic, LLM Client | Domain-specific LLM intelligence for event schedule generation, action validation, automated risk detection, and daily briefings. | [AI Engine Guide](ai/README.md) |
 | **Database** | PostgreSQL 16 Alpine (Docker) | Containerized relational database for persistent club operations. | [docker-compose.yml](docker-compose.yml) |

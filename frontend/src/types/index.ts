@@ -56,6 +56,15 @@ export type {
   DocumentStats,
 } from "./document";
 export type {
+  AiActionType,
+  AiActionStatus,
+  AiActionChange,
+  AiAction,
+  AiActionsListResponse,
+  AiActionResult,
+  AiActionCapabilities,
+} from "./aiAction";
+export type {
   CopilotRole,
   CopilotEntityKind,
   CopilotSource,

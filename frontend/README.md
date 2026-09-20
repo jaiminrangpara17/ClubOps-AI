@@ -1,75 +1,132 @@
-# ClubOps AI — Intelligent Event Operations Platform
+# ClubOps-AI 🚀
 
-<div align="center">
+[![React](https://img.shields.io/badge/React-19.2.6-61DAFB?logo=react&logoColor=black)](https://react.dev/)
+[![Vite](https://img.shields.io/badge/Vite-7.3.2-646CFF?logo=vite&logoColor=white)](https://vitejs.dev/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.9.3-3178C6?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
+[![TailwindCSS](https://img.shields.io/badge/TailwindCSS-4.1.17-06B6D4?logo=tailwindcss&logoColor=white)](https://tailwindcss.com/)
+[![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
-![ClubOps AI](https://img.shields.io/badge/ClubOps-AI%20Platform-indigo?style=for-the-badge&logo=react)
-![React 19](https://img.shields.io/badge/React-19.2-61DAFB?style=for-the-badge&logo=react&logoColor=black)
-![TypeScript](https://img.shields.io/badge/TypeScript-5.9-3178C6?style=for-the-badge&logo=typescript&logoColor=white)
-![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-v4-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white)
-![Vite](https://img.shields.io/badge/Vite-7.3-646CFF?style=for-the-badge&logo=vite&logoColor=white)
-
-<p align="center">
-  <strong>An all-in-one, AI-powered event operations and management platform designed for student clubs, campus organizations, and team event coordinators.</strong>
-</p>
-
-</div>
+> **ClubOps-AI** is a modern, full-lifecycle intelligent event operations and club management platform designed to streamline planning, volunteer coordination, risk management, and intelligent automated workflows for student clubs, organizations, and event teams.
 
 ---
 
-## 🌟 Overview
+## 📖 Table of Contents
 
-**ClubOps AI** streamlines end-to-end event planning, coordination, and execution. From initial ideation with an AI Copilot to volunteer staffing, risk mitigation matrices, meeting minute extraction, and document repository management, ClubOps AI empowers student organizations to run seamless events with operational confidence.
+- [Features](#-features)
+  - [🎯 Event Operations & Overview](#-event-operations--overview)
+  - [🤖 AI Copilot & Action Review](#-ai-copilot--action-review)
+  - [📋 Task Management](#-task-management)
+  - [👥 Volunteer Management](#-volunteer-management)
+  - [📅 Meetings & Minutes](#-meetings--minutes)
+  - [⚠️ Risk Assessment & Mitigation](#️-risk-assessment--mitigation)
+  - [📢 Announcements & Broadcasts](#-announcements--broadcasts)
+  - [📄 Documents & Knowledge Base](#-documents--knowledge-base)
+  - [🎨 Design System & Foundations](#-design-system--foundations)
+- [🛠️ Tech Stack](#️-tech-stack)
+- [📁 Project Structure](#-project-structure)
+- [🚀 Getting Started](#-getting-started)
+  - [Prerequisites](#prerequisites)
+  - [Installation](#installation)
+  - [Running the Development Server](#running-the-development-server)
+  - [Building for Production](#building-for-production)
+- [🧪 Available Scripts](#-available-scripts)
+- [🛡️ State & Architecture](#️-state--architecture)
+- [🤝 Contributing](#-contributing)
+- [📄 License](#-license)
 
 ---
 
-## ✨ Key Features
+## ✨ Features
 
-### 🤖 AI Event Copilot
-- **Intelligent Planning Assistant**: Context-aware AI suggestions for scheduling, task allocation, and event checklists.
-- **Automated Insights**: Identifies timeline bottlenecks, missing roles, and operational blind spots before they become issues.
+### 🎯 Event Operations & Overview
+- **Multi-Event Switching:** Seamlessly switch between active and archived events.
+- **KPI Metrics & Progress:** Track readiness percentage, volunteer headcount, completed deliverables, and critical risk flags in real-time.
+- **Milestone Timeline:** Visual breakdown of countdown milestones leading up to event day.
 
-### 📅 Event Command Center
-- **Dynamic Event Overview**: Live countdowns, phase trackers (Planning, Active, Completed), and status summaries.
-- **Multi-Event Management**: Switch effortlessly across multiple simultaneous campus events and festivals.
+### 🤖 AI Copilot & Action Review
+- **Intelligent Operations Copilot:** Built-in AI copilot capable of synthesizing meeting minutes, proposing tasks, flagging high-risk areas, and suggesting volunteer reassignments.
+- **AI Action Queue & Review:** Human-in-the-loop review interface allowing organizers to approve, reject, or fine-tune AI-suggested operational changes prior to execution.
 
-### 📋 Task & Milestone Tracker
-- **Status & Priority Sorting**: Track tasks from Backlog to In-Progress and Completed.
-- **Role Assignments & Due Dates**: Assign team members and volunteers with granular deadlines.
+### 📋 Task Management
+- **Task Tracking:** Filterable lists and task states (Backlog, In Progress, In Review, Completed, Blocked).
+- **Priorities & Assignees:** Assign tasks to volunteers with clear due dates and urgency levels.
 
-### 🤝 Volunteer & Staffing Coordination
-- **Roster Management**: Manage volunteer profiles, contact details, assigned shifts, and roles.
-- **Attendance & Check-in**: Track check-ins and operational availability in real time.
+### 👥 Volunteer Management
+- **Roster & Roles:** Manage volunteer profiles, contact details, assigned areas, and shift timings.
+- **Capacity & Workload Tracking:** Monitor volunteer availability and commitments across stages.
 
-### 📝 Meeting Minutes & Action Items
-- **Structured Agendas & Minutes**: Log decisions, attendance, and discussions.
-- **Action Item Extraction**: Convert meeting outcomes into assignable tasks with one click.
+### 📅 Meetings & Minutes
+- **Agendas & Schedules:** Organize planning syncs with clear agendas and attendee rosters.
+- **Action Items Extraction:** Convert decisions made during meetings directly into trackable tasks.
 
-### ⚠️ Risk Assessment & Matrix
-- **Impact vs. Probability Grid**: Categorize risks (Operational, Financial, Safety, Technical).
-- **Mitigation Action Plans**: Document contingency protocols and emergency contacts.
-
-### 📂 Documents & Assets Hub
-- **Centralized File Repository**: Store permits, sponsor decks, schedules, design assets, and floor plans.
-- **Category Filtering & Search**: Instant file lookup by tag and document type.
+### ⚠️ Risk Assessment & Mitigation
+- **Risk Matrix:** Log risks categorized by severity and probability.
+- **Mitigation Protocols:** Define contingencies, assign risk owners, and track resolution status.
 
 ### 📢 Announcements & Broadcasts
-- **Targeted Communications**: Publish announcements for organizers, volunteers, or attendees.
-- **Priority Badging**: Pin urgent updates and security notices.
+- **Targeted Communications:** Publish team updates, channel broadcasts, and emergency notifications.
+- **Audit Trails:** Keep a verified history of all club-wide messages.
 
-### 🌓 Theme & User Experience
-- **Dark & Light Mode**: Built-in dark/light mode toggle.
-- **Mock & Live API Dual Engine**: Run completely standalone with comprehensive demo data, or connect seamlessly to a REST backend via `VITE_API_MODE`.
+### 📄 Documents & Knowledge Base
+- **Asset Repository:** Centralized storage for floor plans, budgets, run-of-show sheets, and sponsorship decks.
+- **Categorization & Tags:** Fast search across document metadata and file attachments.
+
+### 🎨 Design System & Foundations
+- **Dark / Light Mode:** Built-in theme context with smooth transitions and persistent settings.
+- **Design Tokens:** Accessible color palette, status tones (`neutral`, `brand`, `success`, `warning`, `danger`, `info`), surface elevations, and responsive typography.
+- **Foundation Showcase:** Interactive component kitchen sink located at `/foundation`.
 
 ---
 
 ## 🛠️ Tech Stack
 
-- **Framework**: [React 19](https://react.dev/) + [Vite 7](https://vitejs.dev/)
-- **Language**: [TypeScript](https://www.typescriptlang.org/)
-- **Styling**: [Tailwind CSS v4](https://tailwindcss.com/)
-- **Icons**: [Lucide React](https://lucide.dev/)
-- **Routing**: [React Router DOM v7](https://reactrouter.com/)
-- **State Management**: React Context & Custom Hooks
+| Technology | Purpose |
+| :--- | :--- |
+| **[React 19](https://react.dev/)** | Modern frontend library with latest hooks and functional patterns |
+| **[Vite 7](https://vitejs.dev/)** | Ultra-fast build tool and development server |
+| **[TypeScript 5.9](https://www.typescriptlang.org/)** | Type-safe enterprise JavaScript codebase |
+| **[Tailwind CSS 4](https://tailwindcss.com/)** | Next-generation utility-first styling with `@tailwindcss/vite` |
+| **[React Router 7](https://reactrouter.com/)** | Declarative client-side routing (`HashRouter`) |
+| **[Lucide React](https://lucide.dev/)** | Consistent and lightweight modern icon library |
+| **[clsx](https://github.com/lukeed/clsx) & [tailwind-merge](https://github.com/dcastil/tailwind-merge)** | Dynamic and conflict-free class name resolution |
+
+---
+
+## 📁 Project Structure
+
+```
+ClubOps-AI/
+├── public/                     # Static assets
+├── src/
+│   ├── components/             # Reusable UI components
+│   │   ├── auth/               # Protected route guards and auth components
+│   │   ├── layout/             # AppLayout, EventLayout, Sidebar, Navbar
+│   │   └── ui/                 # Buttons, Badges, Cards, Inputs, Modals, States
+│   ├── context/                # React Context Providers (Auth, Event, Theme)
+│   ├── data/                   # Mock demo datasets (Events, Tasks, Volunteers, etc.)
+│   ├── hooks/                  # Custom React hooks
+│   ├── lib/                    # Utilities, helpers, and status definitions
+│   ├── pages/                  # Top-level route views
+│   │   ├── event/              # Event-specific sub-routes (Copilot, Tasks, Risks, etc.)
+│   │   ├── DashboardPage.tsx   # Global club dashboard
+│   │   ├── EventsPage.tsx      # All events listing
+│   │   ├── FoundationPage.tsx  # Design system showcase
+│   │   ├── LoginPage.tsx       # Auth portal
+│   │   ├── NotFoundPage.tsx    # 404 page
+│   │   └── SettingsPage.tsx    # Platform settings
+│   ├── routes/                 # App routing configuration
+│   ├── services/               # Mock API services and state handlers
+│   ├── styles/                 # Custom styling tokens and css variables
+│   ├── types/                  # TypeScript interface and type declarations
+│   ├── App.tsx                 # Root application wrapper with providers
+│   ├── index.css               # Global styling and Tailwind directives
+│   └── main.tsx                # Application bootstrap entry point
+├── index.html                  # HTML template
+├── package.json                # Project dependencies and npm scripts
+├── tsconfig.json               # TypeScript compiler configuration
+├── vite.config.ts              # Vite configuration
+└── README.md                   # Project documentation
+```
 
 ---
 
@@ -77,86 +134,73 @@
 
 ### Prerequisites
 
-- [Node.js](https://nodejs.org/) (version 18+ recommended)
-- [npm](https://www.npmjs.com/) or [pnpm](https://pnpm.io/) or [yarn](https://yarnpkg.com/)
+- **Node.js**: `v18.0.0` or higher (Node `v20+` recommended)
+- **npm**: `v9.0.0` or higher (or `pnpm` / `yarn`)
 
 ### Installation
 
-1. **Clone the repository**:
+1. **Clone the repository:**
    ```bash
    git clone https://github.com/jaiminrangpara17/ClubOps-AI.git
    cd ClubOps-AI
    ```
 
-2. **Install dependencies**:
+2. **Install dependencies:**
    ```bash
    npm install
    ```
 
-3. **Configure environment (optional)**:
-   Copy `.env.example` to `.env`:
-   ```bash
-   cp .env.example .env
-   ```
+### Running the Development Server
 
-   | Variable | Default | Description |
-   | :--- | :--- | :--- |
-   | `VITE_API_MODE` | `mock` | `mock` for local standalone mode, `api` for live backend |
-   | `VITE_API_BASE_URL` | `http://localhost:8000/api` | Backend REST API base URL |
-
-4. **Start the development server**:
-   ```bash
-   npm run dev
-   ```
-   Open [http://localhost:5173](http://localhost:5173) in your browser.
-
-5. **Build for Production**:
-   ```bash
-   npm run build
-   ```
-
----
-
-## 📁 Project Structure
-
+Start the local development server:
+```bash
+npm run dev
 ```
-├── public/                # Static public assets
-├── src/
-│   ├── components/        # Reusable UI components & layouts
-│   │   ├── layout/        # Sidebar, Header, EventLayout
-│   │   └── ui/            # Buttons, Badges, Modals, StatCards, Tabs
-│   ├── context/           # React context providers (Auth, Event, Theme)
-│   ├── data/              # Mock dataset for offline/demo operation
-│   ├── hooks/             # Custom utility hooks
-│   ├── lib/               # Utility functions & helpers
-│   ├── pages/             # Main application pages
-│   │   ├── event/         # Event sub-pages (Copilot, Tasks, Risks, Volunteers, etc.)
-│   │   ├── DashboardPage.tsx
-│   │   ├── EventsPage.tsx
-│   │   ├── FoundationPage.tsx
-│   │   ├── LoginPage.tsx
-│   │   └── SettingsPage.tsx
-│   ├── routes/            # Route configuration and guards
-│   ├── services/          # HTTP client, mock adapters, and API services
-│   ├── styles/            # Design system tokens and styles
-│   ├── types/             # TypeScript domain definitions and models
-│   ├── App.tsx            # Main application root
-│   └── main.tsx           # Application entry point
-├── index.html             # HTML template
-├── package.json           # Dependencies and scripts
-├── tsconfig.json          # TypeScript configuration
-└── vite.config.ts         # Vite bundler configuration
+Open your browser and navigate to `http://localhost:5173`.
+
+### Building for Production
+
+Create an optimized production build:
+```bash
+npm run build
+```
+
+Preview the production build locally:
+```bash
+npm run preview
 ```
 
 ---
 
-## 💡 Demo Credentials
+## 🧪 Available Scripts
 
-When running in **Mock Mode** (`VITE_API_MODE=mock`):
-- Click **"Sign In with Demo Account"** or enter any email/password to explore all dashboard features with pre-populated demo events, volunteers, tasks, and meeting notes.
+- `npm run dev` - Launch the Vite development server with Hot Module Replacement (HMR).
+- `npm run build` - Compile TypeScript and bundle assets with Vite for production.
+- `npm run preview` - Locally serve the generated production build from `dist/`.
+
+---
+
+## 🛡️ State & Architecture
+
+- **Authentication Context (`AuthContext`):** Manages user session state, active roles, and redirects unauthenticated requests securely.
+- **Event Context (`EventContext`):** Provides global state for the currently active event across nested navigation bars and copilots.
+- **Theme Context (`ThemeContext`):** Supports dark/light mode toggle with persistent local storage caching.
+- **Error Boundaries:** Gracefully traps component render exceptions and provides fallback recovery interfaces.
+
+---
+
+## 🤝 Contributing
+
+Contributions, issues, and feature requests are welcome!
+
+1. Fork the Project
+2. Create your Feature Branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your Changes (`git commit -m 'feat: Add some AmazingFeature'`)
+4. Push to the Branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
 
 ---
 
 ## 📄 License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+Distributed under the MIT License. See [LICENSE](LICENSE) for more details.
