@@ -1,24 +1,20 @@
-"""Deterministic validator for the Sprint 6 Action Engine."""
+"""Deterministic validator for Sprint 6: AI Action Engine."""
 
 from __future__ import annotations
 
+import re
 from typing import Any
 
-from pydantic import BaseModel
+from pydantic import BaseModel, ValidationError
 
 from app.core.exceptions import (
     ActionValidationError,
     MalformedAIOutputError,
     SchemaValidationError,
 )
-from app.schemas.action_engine import (
-    ActionEngineContext,
-    ActionEngineResult,
-    ActionProposal,
-    PersonContextItem,
-    TaskContextItem,
-)
+from app.schemas.action_engine import ActionEngineRequest, ActionProposalList
 from app.schemas.actions import (
+    SUPPORTED_ACTIONS,
     AIAction,
     AssignTaskAction,
     CreateAnnouncementAction,
@@ -40,189 +36,175 @@ _MUTATION_ACTIONS = (
 )
 
 
-def _extract_task_id_set(task_context: list[Any] | None) -> set[str] | None:
-    """Extract normalized set of valid task identifiers from task_context."""
+def normalize_text(text: str) -> str:
+    """Normalize text by lowercasing, stripping punctuation, and collapsing whitespace."""
+    if not text:
+        return ""
+    lowered = text.lower()
+    cleaned = re.sub(r"[^\w\s]", " ", lowered)
+    return re.sub(r"\s+", " ", cleaned).strip()
+
+
+def extract_known_tasks(task_context: list[dict[str, Any]] | None) -> set[str] | None:
+    """Extract normalized set of valid task identifiers and titles from task_context."""
     if task_context is None:
         return None
     ids: set[str] = set()
     for item in task_context:
-        if isinstance(item, TaskContextItem):
-            ids.add(item.task_id)
-            if item.title:
-                ids.add(item.title.strip().lower())
-        elif isinstance(item, dict):
-            tid = item.get("task_id") or item.get("id")
-            if tid:
-                ids.add(str(tid))
-            title = item.get("title")
-            if title:
-                ids.add(str(title).strip().lower())
+        if isinstance(item, dict):
+            for k in ("task_id", "id", "title", "name"):
+                val = item.get(k)
+                if val is not None:
+                    norm = normalize_text(str(val))
+                    if norm:
+                        ids.add(norm)
+                        ids.add(str(val).strip().lower())
         elif isinstance(item, str):
-            clean = item.strip()
-            if clean:
-                ids.add(clean)
-                ids.add(clean.lower())
-        elif hasattr(item, "title"):
-            ids.add(str(item.title).strip().lower())
+            norm = normalize_text(item)
+            if norm:
+                ids.add(norm)
+                ids.add(item.strip().lower())
     return ids
 
 
-def _extract_people_set(people_context: list[Any] | None) -> set[str] | None:
-    """Extract normalized set of valid person identifiers from people_context."""
-    if people_context is None:
+def extract_known_people(task_context: list[dict[str, Any]] | None) -> set[str] | None:
+    """Extract normalized set of valid people from task_context if people info exists."""
+    if task_context is None:
         return None
     people: set[str] = set()
-    for item in people_context:
-        if isinstance(item, PersonContextItem):
-            people.add(item.name.strip().lower())
-            people.add(item.name.strip())
-            if item.user_id:
-                people.add(item.user_id.strip())
-                people.add(item.user_id.strip().lower())
-        elif isinstance(item, dict):
-            name = item.get("name")
-            if name:
-                people.add(str(name).strip().lower())
-                people.add(str(name).strip())
-            uid = item.get("user_id") or item.get("id")
-            if uid:
-                people.add(str(uid).strip())
-                people.add(str(uid).strip().lower())
-        elif isinstance(item, str):
-            clean = item.strip()
-            if clean:
-                people.add(clean)
-                people.add(clean.lower())
-    return people
+    for item in task_context:
+        if isinstance(item, dict):
+            for k in ("assignee", "owner", "owner_name", "member", "name", "user_id", "person"):
+                val = item.get(k)
+                if isinstance(val, str) and val.strip():
+                    people.add(normalize_text(val))
+                    people.add(val.strip().lower())
+            # Check nested lists of members or people
+            for list_key in ("members", "people", "assignees", "owners"):
+                arr = item.get(list_key)
+                if isinstance(arr, list):
+                    for elem in arr:
+                        if isinstance(elem, str) and elem.strip():
+                            people.add(normalize_text(elem))
+                            people.add(elem.strip().lower())
+                        elif isinstance(elem, dict):
+                            for sub_k in ("name", "user_id", "assignee"):
+                                sub_v = elem.get(sub_k)
+                                if isinstance(sub_v, str) and sub_v.strip():
+                                    people.add(normalize_text(sub_v))
+                                    people.add(sub_v.strip().lower())
+    return people if people else None
 
 
-def _is_task_known(task_id: str, known_ids: set[str]) -> bool:
-    clean = task_id.strip()
-    return clean in known_ids or clean.lower() in known_ids
-
-
-def _is_person_known(assignee: str, known_people: set[str]) -> bool:
-    clean = assignee.strip()
-    return clean in known_people or clean.lower() in known_people
-
-
-def validate_action_proposal(
-    raw_proposal: ActionProposal | AIAction | dict[str, Any],
-    context: ActionEngineContext | None = None,
-) -> ActionProposal:
-    """Validate an action proposal against schema constraints and context grounding."""
-    # 1. Parse into ActionProposal
-    if isinstance(raw_proposal, ActionProposal):
-        proposal = raw_proposal
-    elif isinstance(raw_proposal, _MUTATION_ACTIONS):
-        proposal = ActionProposal(
-            action=raw_proposal, requires_confirmation=True, is_executed=False
-        )
-    elif isinstance(raw_proposal, dict):
-        if "action" in raw_proposal and isinstance(raw_proposal["action"], (dict, BaseModel)):
-            action_obj = validate_ai_action(raw_proposal["action"])
-            reasoning = raw_proposal.get("reasoning")
-            if raw_proposal.get("is_executed", False):
-                err_msg = "Action proposal cannot claim to be executed."
-                raise ActionValidationError(err_msg, detail=err_msg)
-            proposal = ActionProposal(
-                action=action_obj,
-                reasoning=reasoning,
-                requires_confirmation=True,
-                is_executed=False,
-            )
-        else:
-            action_obj = validate_ai_action(raw_proposal)
-            proposal = ActionProposal(
-                action=action_obj,
-                requires_confirmation=True,
-                is_executed=False,
-            )
+def validate_action(
+    raw_action: AIAction | dict[str, Any] | BaseModel,
+    request: ActionEngineRequest | None = None,
+) -> AIAction:
+    """Validate a single action against schema constraints and context grounding."""
+    # A. Validate action and parameters using existing AIAction schema
+    if isinstance(raw_action, _MUTATION_ACTIONS):
+        action_obj = raw_action
+    elif isinstance(raw_action, dict):
+        action_name = raw_action.get("action")
+        if not action_name or action_name not in SUPPORTED_ACTIONS:
+            msg = f"Unsupported action: '{action_name}'. Allowed actions: {SUPPORTED_ACTIONS}"
+            raise ActionValidationError(msg, detail=msg)
+        try:
+            action_obj = validate_ai_action(raw_action)
+        except (ActionValidationError, SchemaValidationError, ValidationError) as e:
+            detail = getattr(e, "detail", str(e))
+            raise ActionValidationError(detail=detail) from None
     else:
-        msg = f"Unsupported action proposal type: {type(raw_proposal)}"
+        msg = f"Unsupported action object type: {type(raw_action)}"
         raise ActionValidationError(msg, detail=msg)
 
-    # 2. Safety Rule: Confirmation is ALWAYS enforced as True
-    if hasattr(proposal.action, "requires_confirmation"):
-        object.__setattr__(proposal.action, "requires_confirmation", True)
-    if proposal.is_executed:
-        raise ActionValidationError(detail="Action proposals must not be marked as executed.")
+    # B. Force confirmation to ALWAYS True
+    object.__setattr__(action_obj, "requires_confirmation", True)
 
-    # 3. Context Grounding Validation
-    known_tasks = _extract_task_id_set(context.task_context if context else None)
-    known_people = _extract_people_set(context.people_context if context else None)
+    # D & E. Context Grounding Validation
+    known_tasks = extract_known_tasks(request.task_context) if request else None
+    known_people = extract_known_people(request.task_context) if request else None
+    params = action_obj.parameters
 
-    action = proposal.action
-    params = action.parameters
-
-    # Check task reference fabrication
+    # Check task reference fabrication for task operations
     if known_tasks is not None and isinstance(
-        action, (UpdateTaskAction, AssignTaskAction, UpdateTaskStatusAction)
+        action_obj, (UpdateTaskAction, AssignTaskAction, UpdateTaskStatusAction)
     ):
         task_id = getattr(params, "task_id", None)
-        if task_id and not _is_task_known(task_id, known_tasks):
-            detail_msg = (
-                f"Fabricated task reference '{task_id}': task does not exist in task context."
+        if task_id:
+            tid_norm = normalize_text(str(task_id))
+            tid_clean = str(task_id).strip().lower()
+            matched = (
+                tid_norm in known_tasks
+                or tid_clean in known_tasks
+                or any(tid_norm in k or k in tid_norm for k in known_tasks if k)
             )
-            raise ActionValidationError(detail_msg, detail=detail_msg)
+            if not matched:
+                detail_msg = (
+                    f"Fabricated task reference '{task_id}': task does not exist in task context."
+                )
+                raise ActionValidationError(detail_msg, detail=detail_msg)
 
-    # Check assignee fabrication
-    if known_people is not None:
+    # Check assignee fabrication when people context exists in task_context
+    if known_people is not None and isinstance(action_obj, (AssignTaskAction, UpdateTaskAction)):
         assignee = getattr(params, "assignee", None)
-        if assignee and not _is_person_known(assignee, known_people):
-            detail_msg = (
-                f"Fabricated assignee '{assignee}': person does not exist in people context."
+        if assignee:
+            assignee_norm = normalize_text(str(assignee))
+            assignee_clean = str(assignee).strip().lower()
+            matched = (
+                assignee_norm in known_people
+                or assignee_clean in known_people
+                or any(assignee_norm in p or p in assignee_norm for p in known_people if p)
             )
-            raise ActionValidationError(detail_msg, detail=detail_msg)
+            if not matched:
+                detail_msg = (
+                    f"Fabricated assignee '{assignee}': person does not exist in people context."
+                )
+                raise ActionValidationError(detail_msg, detail=detail_msg)
 
-    return proposal
+    # Check event reference validation when operating on existing event
+    # Note: create_event creates a NEW event, so it does NOT require an existing event reference
+    if (
+        request
+        and request.event_context
+        and not isinstance(action_obj, CreateEventAction)
+        and hasattr(params, "event_name")
+    ):
+        event_ref = getattr(params, "event_name", None)
+        if event_ref:
+            ev_norm = normalize_text(request.event_context)
+            ref_norm = normalize_text(str(event_ref))
+            if ref_norm not in ev_norm:
+                detail_msg = (
+                    f"Fabricated event reference '{event_ref}': event not in event context."
+                )
+                raise ActionValidationError(detail_msg, detail=detail_msg)
+
+    return action_obj
 
 
 def validate_action_proposals(
-    raw_proposals: list[Any],
-    context: ActionEngineContext | None = None,
-) -> list[ActionProposal]:
-    """Validate a sequence of action proposals deterministically."""
-    if not isinstance(raw_proposals, list):
-        raise ActionValidationError(detail="Expected a list of action proposals.")
-    return [validate_action_proposal(p, context=context) for p in raw_proposals]
-
-
-def validate_action_engine_result(
-    raw_output: Any,
-    context: ActionEngineContext | None = None,
-) -> ActionEngineResult:
-    """Validate raw AI output as a verified ActionEngineResult."""
+    raw_output: ActionProposalList | list[Any] | dict[str, Any] | str,
+    request: ActionEngineRequest,
+) -> ActionProposalList:
+    """Deterministically validate raw AI output into a verified ActionProposalList."""
     if raw_output is None:
         raise MalformedAIOutputError("Action Engine output is empty.")
 
-    # If raw_output is a list of proposals or actions directly
-    if isinstance(raw_output, list):
-        proposals = validate_action_proposals(raw_output, context=context)
-        return ActionEngineResult(
-            summary=f"Proposed {len(proposals)} operational action(s).",
-            proposals=proposals,
-            context_grounded=True,
-        )
+    if isinstance(raw_output, ActionProposalList):
+        parsed = raw_output
+    elif isinstance(raw_output, list):
+        parsed = ActionProposalList(actions=raw_output)
+    elif isinstance(raw_output, dict):
+        try:
+            parsed = ActionProposalList.model_validate(raw_output)
+        except ValidationError as exc:
+            raise ActionValidationError(detail=str(exc)) from None
+    elif isinstance(raw_output, str):
+        parsed = validate_ai_output(raw_output, ActionProposalList)
+    else:
+        msg = f"Unsupported output type for ActionProposalList: {type(raw_output)}"
+        raise ActionValidationError(msg, detail=msg)
 
-    # If already an ActionEngineResult instance
-    if isinstance(raw_output, ActionEngineResult):
-        proposals = validate_action_proposals(raw_output.proposals, context=context)
-        return ActionEngineResult(
-            summary=raw_output.summary,
-            proposals=proposals,
-            context_grounded=raw_output.context_grounded,
-        )
-
-    # Parse JSON/dict into ActionEngineResult structure
-    try:
-        parsed = validate_ai_output(raw_output, ActionEngineResult)
-    except SchemaValidationError as e:
-        raise ActionValidationError(detail=e.detail) from None
-
-    proposals = validate_action_proposals(parsed.proposals, context=context)
-    return ActionEngineResult(
-        summary=parsed.summary,
-        proposals=proposals,
-        context_grounded=parsed.context_grounded,
-    )
+    validated_actions = [validate_action(act, request=request) for act in parsed.actions]
+    return ActionProposalList(actions=validated_actions)

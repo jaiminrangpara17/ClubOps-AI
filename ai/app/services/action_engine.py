@@ -4,20 +4,15 @@ from __future__ import annotations
 
 from typing import Any
 
+from app.core.exceptions import ActionValidationError, SchemaValidationError
 from app.core.llm import LLMService, get_llm_service
 from app.prompts.action_engine import (
     ACTION_ENGINE_SYSTEM_PROMPT,
     build_action_engine_prompt,
 )
-from app.schemas.action_engine import (
-    ActionEngineContext,
-    ActionEngineResult,
-    ActionProposal,
-)
-from app.validators.action_engine_validator import (
-    validate_action_engine_result,
-    validate_action_proposal,
-)
+from app.schemas.action_engine import ActionEngineRequest, ActionProposalList
+from app.validators.action_engine_validator import validate_action_proposals
+from app.validators.output_validator import validate_ai_output
 
 
 class ActionEngineService:
@@ -27,6 +22,7 @@ class ActionEngineService:
     1. NEVER executes actions; only proposes structured mutations.
     2. Enforces requires_confirmation=True on every mutation.
     3. Rejects fabricated task references and assignees when grounding context is supplied.
+    4. Zero database or backend connectivity.
     """
 
     def __init__(self, llm_service: LLMService | None = None) -> None:
@@ -34,17 +30,26 @@ class ActionEngineService:
 
     async def propose_actions(
         self,
-        context: ActionEngineContext | dict[str, Any],
+        request: ActionEngineRequest | dict[str, Any],
         *,
         temperature: float = 0.1,
-    ) -> ActionEngineResult:
-        """Analyze intent and operational context to produce validated action proposals."""
-        if isinstance(context, dict):
-            ctx_obj = ActionEngineContext.model_validate(context)
-        else:
-            ctx_obj = context
+    ) -> ActionProposalList:
+        """Convert validated user intent and context into safe, structured action proposals.
 
-        user_content = build_action_engine_prompt(ctx_obj)
+        Pipeline:
+        request
+        -> build prompt
+        -> existing LLM abstraction
+        -> parse JSON & validate_ai_output()
+        -> deterministic Action Engine validator
+        -> typed ActionProposalList
+        """
+        if isinstance(request, dict):
+            req_obj = ActionEngineRequest.model_validate(request)
+        else:
+            req_obj = request
+
+        user_content = build_action_engine_prompt(req_obj)
 
         response = await self._llm.generate_response(
             prompt=user_content,
@@ -52,12 +57,10 @@ class ActionEngineService:
             temperature=temperature,
         )
 
-        return validate_action_engine_result(response.text, context=ctx_obj)
+        try:
+            parsed = validate_ai_output(response.text, ActionProposalList)
+        except SchemaValidationError as exc:
+            raise ActionValidationError(detail=exc.detail) from None
 
-    def validate_proposal(
-        self,
-        proposal: ActionProposal | dict[str, Any],
-        context: ActionEngineContext | None = None,
-    ) -> ActionProposal:
-        """Validate a single proposal deterministically without LLM invocation."""
-        return validate_action_proposal(proposal, context=context)
+        return validate_action_proposals(parsed, request=req_obj)
+

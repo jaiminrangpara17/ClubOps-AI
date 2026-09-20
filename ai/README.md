@@ -93,17 +93,78 @@ if __name__ == "__main__":
     asyncio.run(main())
 ```
 
-## Sprint 6 Action Engine
+## Sprint 6 AI Action Engine
 
-The Action Engine generates structured operational mutation proposals based on contextual signals without executing mutations directly:
+The Action Engine converts validated user intent and operational context into safe, structured action proposals without directly modifying databases or executing mutations.
 
-1. **Proposal-Only Architecture**: The Action Engine strictly creates proposals (`ActionProposal`). It never mutates databases or triggers executions directly (`is_executed=False`).
-2. **Mandatory Confirmation**: Every mutation proposal enforces `requires_confirmation=True`.
-3. **Deterministic Context Grounding**:
-   - **Task Grounding**: When task context is supplied, proposals referencing non-existent task IDs are rejected (`Fabricated task reference`).
-   - **People Grounding**: When people context is supplied, assignments to unknown individuals are rejected (`Fabricated assignee`).
-   - **Explicit Intent Grounding**: When grounding context is unavailable, explicit user intent values are accepted without hallucinating additional details.
-   - **Event Independence**: `create_event` creates new events and does not require prior event references.
+### Purpose
+The Action Engine acts as an intelligent proposal layer. It translates natural language operational instructions alongside multi-dimensional context (event, tasks, meeting notes, risk registers) into schema-validated action proposals.
+
+### Zero Direct Mutation & Deferred Execution
+> [!IMPORTANT]
+> The AI **NEVER directly modifies the database or backend**. It only produces validated action proposals.
+> **Backend integration and actual execution are deferred to Sprint 9**, strictly requiring user review and confirmation before execution.
+
+### Allowed Actions (Whitelist)
+The Action Engine strictly permits only six action types:
+- `create_task`: `title` (required), `description`, `assignee`, `deadline`, `priority`
+- `update_task`: `task_id` (required), `title`, `description`, `assignee`, `deadline`, `priority`, `status`
+- `assign_task`: `task_id` (required), `assignee` (required)
+- `update_task_status`: `task_id` (required), `status` (`TODO`, `IN_PROGRESS`, `BLOCKED`, `COMPLETED`, `OVERDUE`)
+- `create_announcement`: `title` (required), `message` (required), `audience`
+- `create_event`: `event_name` (required), `description`, `start_date`, `end_date`
+
+Any other action names (e.g. `delete_database`, `drop_tables`) are rejected automatically.
+
+### Action Proposal Structure
+- **`ActionEngineRequest` (`app/schemas/action_engine.py`)**:
+  - `user_intent: str` (required)
+  - `event_context: str | None`
+  - `task_context: list[dict] | None`
+  - `meeting_output: dict | None`
+  - `risk_output: dict | None`
+  - `operational_context: str | None`
+- **`ActionProposalList`**:
+  - `actions: list[AIAction]`: List of typed action proposals conforming to Sprint 2 `AIAction` schemas.
+
+### Confirmation Requirement
+Every action proposal enforces:
+```json
+"requires_confirmation": true
+```
+Even if the LLM produces `false`, the deterministic validator overrides it to `true`. The AI only proposes actions; it cannot authorize execution.
+
+### Deterministic Context Grounding
+1. **Task Grounding**: When `task_context` is supplied, proposals referencing non-existent task IDs or titles are rejected (`Fabricated task reference`).
+2. **People Grounding**: When people or assignees exist in `task_context`, assigning tasks to unknown individuals is rejected (`Fabricated assignee`).
+3. **Explicit Intent Grounding**: When grounding context is intentionally omitted, explicit identifiers provided in `user_intent` are accepted without hallucinating extra details.
+4. **Event Independence**: `create_event` creates new events and does not require prior event references.
+5. **Deterministic Validation**: All checks use normalized string matching (lowercase, whitespace normalization) to avoid false rejections due to casing/whitespace differences.
+
+### Example Action Proposal
+
+```python
+import asyncio
+from app.schemas.action_engine import ActionEngineRequest
+from app.services.action_engine import ActionEngineService
+
+async def main():
+    service = ActionEngineService()
+    request = ActionEngineRequest(
+        user_intent="Assign task t-101 to Alice and set status to IN_PROGRESS",
+        task_context=[
+            {"task_id": "t-101", "title": "Reserve venue hall", "assignee": "Alice"}
+        ],
+    )
+    proposals = await service.propose_actions(request)
+    for action in proposals.actions:
+        print(f"Action: {action.action}, requires_confirmation: {action.requires_confirmation}")
+        print(f"Parameters: {action.parameters.model_dump()}")
+
+if __name__ == "__main__":
+    asyncio.run(main())
+```
+
 
 ## Requirements
 

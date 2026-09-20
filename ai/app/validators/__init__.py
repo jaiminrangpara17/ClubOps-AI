@@ -1,6 +1,5 @@
 from .action_engine_validator import (
-    validate_action_engine_result,
-    validate_action_proposal,
+    validate_action,
     validate_action_proposals,
 )
 from .action_validator import validate_ai_action, validate_ai_actions
@@ -13,8 +12,7 @@ from .risk_validator import (
 
 __all__ = [
     "is_evidence_grounded",
-    "validate_action_engine_result",
-    "validate_action_proposal",
+    "validate_action",
     "validate_action_proposals",
     "validate_ai_action",
     "validate_ai_actions",

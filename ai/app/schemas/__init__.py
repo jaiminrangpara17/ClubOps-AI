@@ -1,9 +1,7 @@
 from .action_engine import (
     ActionEngineContext,
-    ActionEngineResult,
-    ActionProposal,
-    PersonContextItem,
-    TaskContextItem,
+    ActionEngineRequest,
+    ActionProposalList,
 )
 from .actions import (
     SUPPORTED_ACTIONS,
@@ -37,8 +35,8 @@ from .task import Task
 __all__ = [
     "AIAction",
     "ActionEngineContext",
-    "ActionEngineResult",
-    "ActionProposal",
+    "ActionEngineRequest",
+    "ActionProposalList",
     "ActionType",
     "AssignTaskAction",
     "AssignTaskParameters",
@@ -54,7 +52,6 @@ __all__ = [
     "MeetingIntelligenceRequest",
     "MeetingResult",
     "Milestone",
-    "PersonContextItem",
     "Priority",
     "Risk",
     "RiskAnalysisResult",
@@ -64,7 +61,6 @@ __all__ = [
     "RiskSeverityLevel",
     "SUPPORTED_ACTIONS",
     "Task",
-    "TaskContextItem",
     "TaskStatus",
     "UpdateTaskAction",
     "UpdateTaskParameters",
