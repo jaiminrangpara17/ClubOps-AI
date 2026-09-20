@@ -1,636 +1,331 @@
-# ⚙️ ClubOps AI — Backend API Service
+# ⚙️ 1. ClubOps AI — Intelligent Event & Club Operations Platform
 
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.141+-009688?logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com/)
 [![Python](https://img.shields.io/badge/Python-3.11+-3776AB?logo=python&logoColor=white)](https://www.python.org/)
 [![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16-4169E1?logo=postgresql&logoColor=white)](https://www.postgresql.org/)
-[![Tests](https://img.shields.io/badge/tests-144%20passed-brightgreen)](#testing)
+[![Tests](https://img.shields.io/badge/tests-144%20passed-brightgreen)](#18-running-tests)
+[![Submission Status](https://img.shields.io/badge/submission-frozen%20%26%20verified-success)](#submission-package-artifacts)
 
-The **ClubOps AI Backend** is a production-style RESTful API built with FastAPI and PostgreSQL. It provides authentication, role-based authorization, club/member/event/attendance management, an analytics layer, and an AI Copilot powered by an OpenAI-compatible provider.
+The **ClubOps AI Backend** is a production-hardened RESTful API built with FastAPI, PostgreSQL 16, and SQLAlchemy 2.0. It provides unified operational management for university and community organizations, featuring JWT authentication, role-based access control, club/member/event lifecycles, real-time attendance analytics, and a grounded AI intelligence engine.
 
 ---
 
 ## 📋 Table of Contents
-
-1. [Project Overview](#-project-overview)
-2. [Features](#-features)
-3. [Architecture](#-architecture)
-4. [Technology Stack](#-technology-stack)
-5. [Requirements](#-requirements)
-6. [Installation](#-installation)
-7. [Environment Configuration](#-environment-configuration)
-8. [Docker Setup](#-docker-setup)
-9. [Database Setup & Migrations](#-database-setup--migrations)
-10. [Backend Startup](#-backend-startup)
-11. [Frontend Startup](#-frontend-startup)
-12. [Testing](#-testing)
-13. [API Documentation](#-api-documentation)
-14. [Authentication](#-authentication)
-15. [AI Configuration](#-ai-configuration)
-16. [Demo Data & Credentials](#-demo-data--credentials)
-17. [Demo Flow](#-demo-flow)
-18. [Troubleshooting](#-troubleshooting)
-19. [Security Notes](#-security-notes)
-20. [Part 9 — Final Submission Freeze & Verification](#-part-9--final-submission-freeze--verification)
-21. [Final Success Checklist](#-final-success-checklist)
-
----
-
-## 🏗 Project Overview
-
-ClubOps AI is a full-stack club management platform for university and community clubs. The backend exposes a secure REST API that the React frontend consumes. An optional AI layer provides a natural-language copilot, event planner, and meeting intelligence features.
-
-```
-ClubOps-AI/
-├── backend/          ← This service (FastAPI + PostgreSQL)
-├── frontend/         ← React 19 + Vite + TypeScript (see root README)
-├── ai/               ← Standalone AI microservice
-├── docker-compose.yml
-└── README.md
-```
+1. [ClubOps AI](#1-clubops-ai--intelligent-event--club-operations-platform)
+2. [Problem Statement](#2-problem-statement)
+3. [Solution](#3-solution)
+4. [Key Features](#4-key-features)
+5. [Architecture](#5-architecture)
+6. [Tech Stack](#6-tech-stack)
+7. [System Workflow](#7-system-workflow)
+8. [AI Features](#8-ai-features)
+9. [Authentication & Authorization](#9-authentication--authorization)
+10. [Database Design](#10-database-design)
+11. [API Overview](#11-api-overview)
+12. [Frontend](#12-frontend)
+13. [Setup Instructions](#13-setup-instructions)
+14. [Environment Variables](#14-environment-variables)
+15. [Docker Setup](#15-docker-setup)
+16. [Database Migration](#16-database-migration)
+17. [Running the Application](#17-running-the-application)
+18. [Running Tests](#18-running-tests)
+19. [Demo Instructions](#19-demo-instructions)
+20. [Troubleshooting](#20-troubleshooting)
+21. [Team / Contributors](#21-team--contributors)
+22. [Future Scope](#22-future-scope)
 
 ---
 
-## ✨ Features
-
-| Module | Endpoints | Description |
-|--------|-----------|-------------|
-| **Auth** | `POST /auth/register`, `POST /auth/login`, `GET /auth/me` | JWT-based authentication |
-| **Users** | `GET/PATCH /users/me` | Profile management |
-| **Clubs** | Full CRUD | Club lifecycle management |
-| **Members** | Full CRUD | Club roster management |
-| **Events** | Full CRUD | Event scheduling |
-| **Attendance** | Full CRUD | Per-event attendance records |
-| **Analytics** | `GET /analytics/overview`, `GET /analytics/clubs/{id}` | Aggregated attendance metrics |
-| **AI Copilot** | `POST /ai/copilot` | Natural-language Q&A grounded in real data |
-| **AI Planner** | `POST /ai/planner` | Structured event plan generation |
-| **AI Insights** | `GET /ai/insights` | Operational recommendations |
-| **Meeting Intelligence** | `POST /ai/meetings/analyze` | Transcript → summary + action items |
-| **Action Validation** | `POST /ai/actions/validate` | Deterministic + AI rule checking |
-| **Health** | `GET /health`, `GET /health/ready` | Liveness + DB readiness probes |
+## 2. Problem Statement
+Student and community club leaders consistently face operational fragmentation:
+- **Fragmented Data**: Rosters are maintained in spreadsheets, event chats are scattered across messaging apps, and attendance is taken on paper forms.
+- **Lost Meeting Knowledge**: Key takeaways, decisions, and assigned responsibilities fade away in unreviewed meeting notes.
+- **Opaque Attendance Visibility**: Attendance records are rarely synthesized into engagement or member retention metrics.
+- **Action Item Leakage**: Post-meeting tasks lack follow-through and operational validation.
+- **Lack of Centralized Operational Intelligence**: Organizers lack an accessible assistant that can answer operational queries using factual club history.
 
 ---
 
-## 🏛 Architecture
-
+## 3. Solution
+ClubOps AI replaces disjointed tools with one continuous operational pipeline:
+```text
+Club ➔ Members ➔ Events ➔ Attendance ➔ Analytics ➔ AI Copilot ➔ Meeting Intelligence ➔ Action Engine
 ```
-┌──────────────────────────────────────┐
-│          React Frontend (Vite)       │
-│     http://localhost:5173            │
-└──────────────┬───────────────────────┘
-               │ HTTP / Bearer JWT
-┌──────────────▼───────────────────────┐
-│      FastAPI Backend (Uvicorn)       │
-│      http://localhost:8000           │
-│                                      │
-│  Routers  → auth, clubs, members,   │
-│             events, attendance,      │
-│             analytics, ai, users     │
-│                                      │
-│  Security → JWT, RBAC (admin /       │
-│             manager / member)        │
-│                                      │
-│  Middleware → CORS, Security         │
-│               Headers, Access Log   │
-└──────────────┬───────────────────────┘
-               │ SQLAlchemy 2.0
-┌──────────────▼───────────────────────┐
-│       PostgreSQL 16 (Docker)         │
-│       port 5432                      │
-│       Schema managed by Alembic      │
-└──────────────────────────────────────┘
-               │ httpx
-┌──────────────▼───────────────────────┐
-│  OpenAI-compatible AI Provider       │
-│  (optional — app works without it)   │
-└──────────────────────────────────────┘
+Every operational action feeds directly into platform intelligence: attendance marked in an event immediately updates analytical dashboards and is accessible by the grounded AI Copilot to answer organizer questions accurately.
+
+---
+
+## 4. Key Features
+| Domain | Capabilities |
+|---|---|
+| **Authentication** | User registration, Argon2 salted password hashing, JWT Bearer tokens, profile management. |
+| **Clubs** | Full CRUD lifecycle, unique club namespace validation, creation timestamps. |
+| **Members** | Club roster management, unique email validation, cascade protection. |
+| **Events** | Scheduling, start/end timestamps, club scoping, participant tracking. |
+| **Attendance** | Per-event check-ins (`present`/`absent`), idempotent updates, composite key uniqueness. |
+| **Analytics** | Real-time database aggregations (attendance rates, member trends, event volume). Zero fabricated data. |
+| **AI Copilot** | Natural-language Q&A strictly grounded in verified database records. |
+| **Meeting Intelligence** | Transcripts parsed into executive summaries, recorded decisions, and assigned action items. |
+| **Action Engine** | Validates proposed operations against business rules (e.g. valid future dates, existing clubs). |
+| **Health Probes** | Liveness probe (`/health`) and Kubernetes-style database readiness probe (`/health/ready`). |
+
+---
+
+## 5. Architecture
+The platform implements a clean 3-tier REST architecture:
+```text
+                    ┌─────────────────────────┐
+                    │       User / Demo       │
+                    └────────────┬────────────┘
+                                 │ HTTP / JSON
+                                 ▼
+                    ┌─────────────────────────┐
+                    │   React Frontend (Vite) │
+                    │   Dashboard / AI Views  │
+                    └────────────┬────────────┘
+                                 │ Bearer JWT / CORS
+                                 ▼
+┌──────────────────────────────────────────────────────────────┐
+│                    FastAPI Backend (8000)                    │
+│                                                              │
+│  Middleware  → Security Headers, Access Logging, CORS       │
+│  Routers     → Auth, Users, Clubs, Members, Events,         │
+│                Attendance, Analytics, AI, Health             │
+│  Security    → Argon2 Hashing, JWT RBAC Dependencies         │
+│  Services    → AI Service, Grounding Engine, Action Engine  │
+└──────────────┬───────────────────────────────┬───────────────┘
+               │ SQLAlchemy 2.0                │ httpx (REST)
+               ▼                               ▼
+      ┌────────────────┐             ┌──────────────────┐
+      │  PostgreSQL 16 │             │   AI Provider    │
+      │  Alembic Head  │             │ OpenAI-Compatible│
+      │ (port 55432)   │             │   gpt-4o-mini    │
+      └────────────────┘             └──────────────────┘
 ```
 
 ---
 
-## 🛠 Technology Stack
-
-| Layer | Technology | Version |
-|-------|-----------|---------|
-| **Framework** | FastAPI | 0.141+ |
-| **ASGI Server** | Uvicorn | 0.53+ |
-| **ORM** | SQLAlchemy | 2.0+ |
-| **Migrations** | Alembic | 1.20+ |
-| **Database** | PostgreSQL | 16 |
-| **DB Driver** | psycopg (v3) | 3.3+ |
-| **Auth** | PyJWT + pwdlib (Argon2) | — |
-| **Validation** | Pydantic v2 | 2.13+ |
-| **HTTP Client** | httpx | 0.28+ |
-| **Testing** | pytest | 9.1+ |
-| **Config** | python-dotenv | 1.2+ |
+## 6. Tech Stack
+| Component | Technology | Version | Description |
+|---|---|---|---|
+| **Language** | Python | 3.11+ / 3.14 | Modern async Python |
+| **Web Framework** | FastAPI | 0.141+ | High-performance ASGI framework |
+| **ASGI Server** | Uvicorn | 0.41+ | Production ASGI server |
+| **Database** | PostgreSQL | 16-alpine | ACID relational database |
+| **ORM** | SQLAlchemy | 2.0+ | Object-relational mapping |
+| **Migrations** | Alembic | 1.20+ | Database versioning & DDL |
+| **Validation** | Pydantic | 2.12+ | Request/response data validation |
+| **Password Hashing**| pwdlib (Argon2) | 0.3+ | Salted password protection |
+| **Auth Tokens** | python-jose | 3.5+ | JWT HS256 token encoding/decoding |
+| **Test Runner** | pytest | 9.1+ | 144 automated tests |
 
 ---
 
-## 📋 Requirements
-
-- **Python** 3.11 or later (tested on 3.14)
-- **Docker Desktop** (for PostgreSQL via docker-compose)
-- **Node.js** 18+ (for the frontend only)
-- A shell with PowerShell or bash
+## 7. System Workflow
+1. **Club Setup**: Executive registers and creates a Club entity.
+2. **Roster Building**: Members are registered or imported to the club roster.
+3. **Event Scheduling**: Events are scheduled with dates, venues, and descriptions.
+4. **Attendance Marking**: During or after the event, member attendance is marked.
+5. **Real-time Analytics**: Attendance rates and engagement metrics are updated dynamically from raw SQL records.
+6. **AI Grounding**: Organizers query the AI Copilot, which retrieves relevant SQL rows and generates accurate answers.
+7. **Meeting Follow-up**: Meeting transcripts are ingested to extract decisions and actionable tasks.
 
 ---
 
-## 🚀 Installation
+## 8. AI Features
+- **Grounding Engine**: Injects verified SQL records into system prompts to prevent hallucinations.
+- **Event Planner**: Produces structured JSON event plans containing agendas, staffing requirements, risks, and follow-ups.
+- **Meeting Intelligence**: Parses raw text transcripts into structured summaries, key decisions, and assigned action items.
+- **Action Validation**: Combines deterministic rules with AI operational feedback to identify planning errors.
+- **Graceful Failure**: If the external AI service times out or lacks an API key, the system returns HTTP 503 without crashing. Non-AI routes remain 100% operational.
 
-### 1. Clone the repository
+---
 
-```bash
+## 9. Authentication & Authorization
+- **Argon2 Password Hashing**: Passwords are never stored in plaintext.
+- **JWT Tokens**: HS256 tokens expire after 30 minutes (configurable via `JWT_ACCESS_TOKEN_EXPIRE_MINUTES`).
+- **Role-Based Access Control (RBAC)**:
+  - `admin`: Full administrative control across the system.
+  - `manager`: Club-level management, events, attendance, and AI planners.
+  - `member`: Read-only access to own clubs and attendance records.
+  - `anonymous`: Access restricted to `/health` and authentication endpoints.
+
+---
+
+## 10. Database Design
+PostgreSQL relational schema managed via Alembic:
+```text
+Club (1) ────────── (N) Member (1) ────────── (N) Attendance
+  │                                                    │
+  └────────────── (N) Event  (1) ──────────────────────┘
+```
+- **Users**: `id`, `username`, `email`, `hashed_password`, `role`, `is_active`, `created_at`
+- **Clubs**: `id`, `name` (unique), `description`, `created_at`, `updated_at`
+- **Members**: `id`, `club_id` (FK), `name`, `email`, `joined_at`
+- **Events**: `id`, `club_id` (FK), `title`, `description`, `starts_at`, `ends_at`, `created_at`
+- **Attendance**: `id`, `member_id` (FK), `event_id` (FK), `present` (bool), `marked_at` (composite unique key on `member_id, event_id`)
+
+---
+
+## 11. API Overview
+Interactive Swagger UI available at `http://localhost:8000/docs`:
+| Tag | Key Endpoints | Description |
+|---|---|---|
+| **auth** | `POST /auth/register`, `POST /auth/login`, `GET /auth/me` | Authentication & token issuance |
+| **users** | `GET /users/me`, `PATCH /users/me` | Current user profile management |
+| **clubs** | `GET/POST /clubs`, `GET/PUT/DELETE /clubs/{id}` | Club lifecycle management |
+| **members** | `GET/POST /members`, `GET/PUT/DELETE /members/{id}` | Member roster management |
+| **events** | `GET/POST /events`, `GET/PUT/DELETE /events/{id}` | Event scheduling |
+| **attendance** | `GET/POST /attendance`, `GET/PUT/DELETE /attendance/{id}`| Attendance records |
+| **analytics** | `GET /analytics/overview`, `GET /analytics/clubs/{id}` | Real operational metrics |
+| **ai** | `POST /ai/copilot`, `POST /ai/planner`, `POST /ai/meetings/analyze` | Grounded AI & meeting tools |
+| **ops** | `GET /health`, `GET /health/ready` | Liveness and DB readiness checks |
+
+---
+
+## 12. Frontend
+The backend powers the React 19 + TypeScript + Vite frontend client:
+- **CORS Configured**: Configured via `CORS_ORIGINS` to allow `http://localhost:5173` and `http://127.0.0.1:5173`.
+- **Stateless API Consumption**: Frontend stores JWT in local session storage and sends `Authorization: Bearer <token>` headers.
+- **Contract Stability**: Fully typed responses using Pydantic v2 schemas.
+
+---
+
+## 13. Setup Instructions
+Reproducible setup from a clean terminal:
+```powershell
+# 1. Clone repository
 git clone https://github.com/jaiminrangpara17/ClubOps-AI.git
-cd ClubOps-AI
-```
+cd ClubOps-AI/backend
 
-### 2. Create and activate a virtual environment
-
-```bash
-# macOS / Linux
+# 2. Create virtual environment
 python -m venv .venv
-source .venv/bin/activate
+.\.venv\Scripts\Activate.ps1
 
-# Windows PowerShell
-python -m venv .venv
-.venv\Scripts\Activate.ps1
-```
-
-### 3. Install backend dependencies
-
-```bash
-cd backend
+# 3. Install pinned dependencies
 pip install -r requirements.txt
+
+# 4. Configure environment
+copy .env.example .env
+# Edit .env with your PostgreSQL credentials and JWT secret
 ```
 
 ---
 
-## ⚙️ Environment Configuration
-
-Copy the example environment file and fill in your values:
-
-```bash
-# macOS / Linux
-cp .env.example .env
-
-# Windows PowerShell
-Copy-Item .env.example .env
-```
-
-Then edit `backend/.env`:
-
-```dotenv
-# PostgreSQL
+## 14. Environment Variables
+Reference configuration (`backend/.env.example`):
+```env
 POSTGRES_DB=clubops_ai
 POSTGRES_USER=clubops
-POSTGRES_PASSWORD=your_strong_password_here
+POSTGRES_PASSWORD=change_me_strong_password
 POSTGRES_PORT=5432
 
-# Connection string (must match the values above)
-DATABASE_URL=postgresql+psycopg://clubops:your_strong_password_here@localhost:5432/clubops_ai
+DATABASE_URL=postgresql+psycopg://clubops:change_me_strong_password@localhost:5432/clubops_ai
 
-# JWT — generate with: python -c "import secrets; print(secrets.token_hex(32))"
-JWT_SECRET_KEY=your-64-char-hex-secret-here
+JWT_SECRET_KEY=change-me-to-a-long-random-hex-string
 JWT_ALGORITHM=HS256
 JWT_ACCESS_TOKEN_EXPIRE_MINUTES=30
 
-# CORS
-CORS_ORIGINS=http://localhost:5173,http://127.0.0.1:5173
+CORS_ORIGINS=http://localhost:5173,http://127.0.0.1:5173,http://localhost:3000,http://127.0.0.1:3000
 
-# AI (optional — leave empty to disable AI features)
 AI_API_KEY=
 AI_MODEL=gpt-4o-mini
 ```
 
-> **Important**: Never commit `.env`. It is in `.gitignore` and must remain there.
-
 ---
 
-## 🐳 Docker Setup
-
-PostgreSQL is managed via Docker Compose from the **repository root**:
-
-```bash
-# From the repo root (not backend/)
+## 15. Docker Setup
+Run PostgreSQL 16 Alpine container:
+```powershell
+# From root repository
 docker compose up -d
-```
 
-Verify the database is healthy:
-
-```bash
+# Verify container is running and healthy
 docker compose ps
 ```
 
-Expected output:
-```
-NAME                STATUS          PORTS
-clubops-postgres    Up (healthy)    0.0.0.0:5432->5432/tcp
-```
-
-Stop PostgreSQL:
-
-```bash
-docker compose down
-```
-
-> **Note**: `POSTGRES_PASSWORD` in your `.env` must match what docker-compose uses. The docker-compose reads from the same `.env` file at the repository root — copy your backend `.env` values there or keep a single `.env` at the root.
-
 ---
 
-## 🗄 Database Setup & Migrations
-
-From the `backend/` directory, with the virtual environment active:
-
-### Run all migrations
-
-```bash
-alembic upgrade head
-```
-
-### Verify current migration state
-
-```bash
-alembic current
-# Expected: ef3755e0a2a7 (head)
-```
-
-### Check for schema drift
-
-```bash
-alembic check
-# Expected: No new upgrade operations detected.
-```
-
-### Migration history
-
-| Revision | Description |
-|----------|-------------|
-| `69f12bff9124` | Create initial ClubOps tables (clubs, members, events, attendance) |
-| `762307c126bf` | Add unique constraint to club name |
-| `ef3755e0a2a7` | Create users table with RBAC |
-
----
-
-## 🖥 Backend Startup
-
-### Development (with hot-reload)
-
-```bash
-# From backend/
-uvicorn app.main:app --reload --port 8000
-```
-
-### Production (no --reload)
-
-```bash
-# From backend/
-uvicorn app.main:app --host 0.0.0.0 --port 8000 --workers 1
-```
-
-The API will be available at `http://localhost:8000`.
-
----
-
-## 🌐 Frontend Startup
-
-From the **repository root**:
-
-```bash
-# Install dependencies (first time only)
-npm install
-
-# Copy and configure environment
-Copy-Item .env.example .env.local     # Windows
-# cp .env.example .env.local          # macOS/Linux
-
-# Edit .env.local:
-# VITE_API_BASE_URL=http://localhost:8000
-# VITE_API_MODE=api
-
-# Start development server
-npm run dev
-```
-
-Frontend available at `http://localhost:5173`.
-
-### Production build
-
-```bash
-npm run build
-# Output: dist/ directory
-```
-
----
-
-## 🧪 Testing
-
-From the `backend/` directory:
-
-```bash
-# Run all tests with verbose output
-python -m pytest tests -v
-
-# Run a specific test file
-python -m pytest tests/test_analytics.py -v
-
-# Run with short traceback
-python -m pytest tests -v --tb=short
-```
-
-**Expected result**: `144 passed` (zero failures).
-
-The test suite uses an isolated PostgreSQL test database (`clubops_test`). No production data is affected.
-
-### Test coverage by module
-
-| Test File | Tests | Module |
-|-----------|-------|--------|
-| `test_auth.py` | 18 | Authentication & JWT |
-| `test_clubs.py` | 15 | Clubs CRUD |
-| `test_members.py` | 13 | Members CRUD |
-| `test_events.py` | 13 | Events CRUD |
-| `test_attendance.py` | 14 | Attendance records |
-| `test_users.py` | 15 | User profile |
-| `test_analytics.py` | 15 | Analytics endpoints |
-| `test_ai.py` | 8 | AI client & service |
-| `test_ai_copilot.py` | 7 | AI Copilot endpoint |
-| `test_meeting_intelligence.py` | 14 | Meeting analysis |
-| `test_cors.py` | 11 | CORS middleware |
-| `test_health.py` | 1 | Health check |
-
----
-
-## 📚 API Documentation
-
-With the backend running, visit:
-
-| URL | Description |
-|-----|-------------|
-| `http://localhost:8000/docs` | Swagger UI (interactive) |
-| `http://localhost:8000/redoc` | ReDoc (read-only) |
-| `http://localhost:8000/health` | Liveness probe |
-| `http://localhost:8000/health/ready` | Readiness probe (DB ping) |
-
-### API Groups visible in Swagger
-
-- **auth** — Register, Login, Me
-- **users** — User profile
-- **clubs** — Club management
-- **members** — Roster management
-- **events** — Event scheduling
-- **attendance** — Attendance records
-- **analytics** — Metrics & reporting
-- **ai** — Copilot, Planner, Insights, Meeting Intelligence
-
----
-
-## 🔐 Authentication
-
-ClubOps AI uses **JWT Bearer tokens** with Argon2-hashed passwords.
-
-### Register a new user
-
-```bash
-curl -X POST http://localhost:8000/auth/register \
-  -H "Content-Type: application/json" \
-  -d '{"username":"alice","email":"alice@example.com","full_name":"Alice","password":"SecurePass123!"}'
-```
-
-### Login and get a token
-
-```bash
-curl -X POST http://localhost:8000/auth/login \
-  -d "username=alice&password=SecurePass123!"
-```
-
-Response:
-```json
-{"access_token": "eyJ...", "token_type": "bearer"}
-```
-
-### Call a protected endpoint
-
-```bash
-curl http://localhost:8000/clubs/ \
-  -H "Authorization: Bearer eyJ..."
-```
-
-### Roles
-
-| Role | Permissions |
-|------|-------------|
-| `admin` | Full access to all endpoints |
-| `manager` | Create/edit clubs, events, members; access analytics and AI |
-| `member` | Read own profile; read clubs/events (limited) |
-
----
-
-## 🤖 AI Configuration
-
-The AI layer is **optional**. All non-AI endpoints work without `AI_API_KEY`.
-
-To enable AI features:
-
-1. Obtain an OpenAI API key (or compatible provider key).
-2. Set in `backend/.env`:
-   ```
-   AI_API_KEY=sk-...your-key-here...
-   AI_MODEL=gpt-4o-mini
-   ```
-3. Restart the backend.
-
-When `AI_API_KEY` is empty:
-- All AI endpoints return `503 Service Unavailable`
-- The rest of the application continues normally
-- No crash, no secret exposure
-
----
-
-## 🌱 Demo Data & Credentials
-
-Load realistic demo data using the included seed script:
-
-```bash
-# From backend/
-python scripts/seed_demo.py
-```
-
-This is **idempotent** — running it multiple times produces no duplicates and no errors.
-
-### Demo credentials
-
-| Username | Password | Role |
-|----------|----------|------|
-| `admin` | `AdminPass123!` | admin |
-| `manager` | `ManagerPass123!` | manager |
-| `member1` | `MemberPass123!` | member |
-
-### Seeded data
-
-- **Club**: Ahmedabad AI Community
-- **Club Members**: Priya Sharma, Rohan Mehta, Anjali Patel, Dev Kapoor
-- **Events**: AI Workshop 2026 (past), Hackathon Sprint (past), Guest Lecture: LLMs (upcoming)
-- **Attendance**: Realistic present/absent records for all past events
-
----
-
-## 🎬 Demo Flow
-
-Follow these 22 steps to demonstrate ClubOps AI end-to-end:
-
-1. Open `http://localhost:5173`
-2. Login as `admin` / `AdminPass123!`
-3. View the dashboard overview
-4. Navigate to **Analytics** — verify attendance rates
-5. Open **Clubs** — see "Ahmedabad AI Community"
-6. Click the club — view detail page
-7. Navigate to **Members** — see 4 roster entries
-8. Click **Add Member** — add a 5th test member
-9. Navigate to **Events** — see 3 events
-10. Click **Create Event** — add a new upcoming event
-11. Open an existing event (AI Workshop 2026)
-12. Navigate to **Attendance** — see present/absent records
-13. Mark a member's attendance as present
-14. Return to **Analytics** — verify the updated rate
-15. Open **AI Copilot** — type "What events does the club have?"
-16. Review the AI response grounded in real data
-17. Click **Generate Event Plan** — enter event details
-18. Review the structured agenda, tasks, and risks
-19. Open **Meeting Intelligence** — paste a meeting transcript
-20. View the extracted summary, decisions, and action items
-21. Logout and login as `member1` / `MemberPass123!`
-22. Verify restricted access (analytics and AI not visible/accessible)
-
----
-
-## 🔧 Troubleshooting
-
-### Database connection refused
-
-**Symptom**: `connection refused` or `could not connect to server`
-
-**Fix**:
-```bash
-# Check Docker is running and PostgreSQL is healthy
-docker compose ps
-
-# Restart if needed
-docker compose down
-docker compose up -d
-
-# Verify DATABASE_URL matches your .env values
-```
-
-### Alembic migration fails
-
-**Symptom**: `Target database is not up to date`
-
-**Fix**:
-```bash
+## 16. Database Migration
+Apply migrations to bring PostgreSQL to the latest schema:
+```powershell
 alembic upgrade head
 alembic current
-```
-
-### `pytest` cannot find test database
-
-**Symptom**: Test suite fails to connect
-
-**Fix**: Ensure the test database exists. The `conftest.py` expects:
-```
-postgresql+psycopg://clubops:ClubOpsDev2026@localhost:55432/clubops_test
-```
-Create it:
-```bash
-docker exec -it <postgres-container> psql -U clubops -c "CREATE DATABASE clubops_test;"
-```
-
-### AI endpoints return 503
-
-**Symptom**: `AI service is currently unavailable or unconfigured`
-
-**Fix**: Add a valid `AI_API_KEY` to `backend/.env`, or this is expected behavior when running without AI.
-
-### Port already in use
-
-**Symptom**: `[Errno 98] Address already in use`
-
-**Fix**:
-```bash
-# Kill whatever is on port 8000
-# Windows
-netstat -ano | findstr :8000
-taskkill /PID <pid> /F
+# Output should show: ef3755e0a2a7 (head)
 ```
 
 ---
 
-## 🔒 Security Notes
-
-- `.env` is in `.gitignore` — **never tracked by Git**
-- Passwords hashed with **Argon2** (pwdlib)
-- JWT tokens expire after 30 minutes (configurable)
-- Every response includes security headers:
-  - `X-Content-Type-Options: nosniff`
-  - `X-Frame-Options: DENY`
-  - `X-XSS-Protection: 1; mode=block`
-  - `Referrer-Policy: strict-origin-when-cross-origin`
-  - `Strict-Transport-Security` (HSTS)
-- CORS restricted to configured origins
-- RBAC enforced at dependency level — not just route level
-- AI endpoints require `manager` or `admin` role
-- No password hashes exposed in any API response
-
----
-
-## 🧊 Part 9 — Final Submission Freeze & Verification
-
-The project is in **Final Submission Freeze Mode**. The backend service has completed comprehensive regression testing, security auditing, and deployment validation.
-
-### Production Execution
+## 17. Running the Application
+### Production ASGI Runner (Recommended):
 FastAPI deployment guidelines recommend avoiding `--reload` in production:
 ```powershell
 uvicorn app.main:app --host 0.0.0.0 --port 8000
 ```
 
-### Health & Readiness Probes
-- `GET /health`: Liveness probe returns `{"status": "ok", "service": "ClubOps AI API"}` with HTTP 200.
-- `GET /health/ready`: Kubernetes-style readiness probe checks database connectivity and returns `{"status": "ready", "checks": {"database": "ok"}}` with HTTP 200, or HTTP 503 if unavailable.
-- `GET /docs`: OpenAPI/Swagger documentation accessible at `http://localhost:8000/docs`.
-
-### Regression Verification
-- **Test Suite**: 144 unit and integration tests passing (`python -m pytest tests -v`).
-- **Database Migrations**: Alembic verified at head `ef3755e0a2a7` with zero pending drift (`alembic check`).
-- **Security Audit**: 531 repository files scanned, 0 sensitive credentials committed.
-- **Demo Seed Data**: Fully reproducible via `python scripts/seed_demo.py`.
+### Development Mode:
+```powershell
+uvicorn app.main:app --reload --port 8000
+```
 
 ---
 
-## ✅ Final Success Checklist
-
-| Verification Item | Target Standard | Status | Evidence / Notes |
-|---|---|:---:|---|
-| Application Startup | Production ASGI command (`uvicorn`) | ✅ | `uvicorn app.main:app --host 0.0.0.0 --port 8000` starts cleanly |
-| Database Connectivity | PostgreSQL 16 on port 55432 | ✅ | Active connection via SQLAlchemy & Alembic |
-| Schema Migrations | At head, zero unapplied models | ✅ | `alembic current` -> `ef3755e0a2a7 (head)` |
-| Authentication | JWT tokens, login, register, expiry | ✅ | 18 passing auth tests |
-| Authorization (RBAC) | Role enforcement for admin/manager/member | ✅ | Dependencies enforce correct 403 Forbidden |
-| Clubs Management | Full CRUD operations | ✅ | 15 passing club tests |
-| Members Management | Full CRUD operations | ✅ | 13 passing member tests |
-| Events Management | Full CRUD operations | ✅ | 13 passing event tests |
-| Attendance Tracking | Full CRUD & per-event records | ✅ | 14 passing attendance tests |
-| Analytics Layer | Real aggregated operational calculations | ✅ | 15 passing analytics tests, 0 fabricated numbers |
-| AI Copilot | Natural-language Q&A grounded in DB | ✅ | 7 passing copilot tests, strict context grounding |
-| Meeting Intelligence | Summary, decisions & action item extraction | ✅ | 14 passing meeting intelligence tests |
-| Action Validation | Deterministic rules + AI advice | ✅ | Real validation against event dates & club existence |
-| AI Failure Handling | Graceful 503/429 without leaking secrets | ✅ | Non-AI features continue unaffected if unconfigured |
-| API Documentation | Interactive Swagger UI available | ✅ | `/docs` exposes all 8 router modules |
-| Test Suite | 0 failed, 0 errors | ✅ | 144/144 tests passed in 32.24s |
-| Dependency Management | Pinned versions in `requirements.txt` | ✅ | Exact versions from tested Python 3.14 stack |
-| Security Review | Zero secrets in Git | ✅ | 531 tracked files scanned, 0 leaks, `.env` gitignored |
-| Demo Seed Script | Idempotent get-or-create data | ✅ | `python scripts/seed_demo.py` repeatable |
-| Docker Compose | PostgreSQL 16 container configuration | ✅ | `docker compose config` validates cleanly |
-| GitHub Repository | Up to date, protected submission branch | ✅ | `main` and `submission-final` synchronized |
-| Force Push Policy | Strictly no `--force` | ✅ | 100% standard fast-forward and regular pushes |
+## 18. Running Tests
+Run the automated pytest regression suite:
+```powershell
+python -m pytest tests -v --tb=short
+```
+**Test Results**: **144 passed**, 0 failed, 0 errors in ~32 seconds. See [`docs/submission/TEST_RESULTS.txt`](docs/submission/TEST_RESULTS.txt).
 
 ---
 
-*ClubOps AI — Parts 02B through 09 complete. Project frozen for final evaluation.*
+## 19. Demo Instructions
+Seed the database with repeatable demo data:
+```powershell
+python scripts/seed_demo.py
+```
+### Demo Credentials:
+- **Admin**: `admin` / `AdminPass123!`
+- **Manager**: `manager` / `ManagerPass123!`
+- **Member**: `member1` / `MemberPass123!`
+
+Follow the detailed 7-scene presentation walkthrough in [`docs/submission/DEMO_SCRIPT_AND_BACKUP.md`](docs/submission/DEMO_SCRIPT_AND_BACKUP.md).
+
+---
+
+## 20. Troubleshooting
+- **Database Connection Failed**: Ensure Docker PostgreSQL is running on the port specified in `.env`.
+- **Alembic Drift Detected**: Run `alembic upgrade head` to align revisions.
+- **AI Endpoints Return 503**: Expected behavior when running without `AI_API_KEY`. Add a valid key in `.env` to enable live LLM inference.
+- **Port 8000 in Use**: Free the port using `taskkill /PID <pid> /F`.
+
+---
+
+## 21. Team / Contributors
+- **ClubOps AI Development Team**
+- **Repository**: [https://github.com/jaiminrangpara17/ClubOps-AI](https://github.com/jaiminrangpara17/ClubOps-AI)
+- **Branch**: `submission-final`
+
+---
+
+## 22. Future Scope
+- **QR Code Check-ins**: Mobile check-in scanning for instant attendance logging.
+- **Calendar Integrations**: Two-way synchronization with Google Calendar and Outlook.
+- **Multi-Tenant Budgeting**: Club funding, budget allocation, and expense tracking.
+- **Automated Announcements**: Push notifications and email reminders for upcoming events.
+
+---
+
+## 📦 Submission Package Artifacts
+Detailed submission artifacts are maintained in `docs/submission/`:
+- [`PROJECT_SUMMARY.md`](docs/submission/PROJECT_SUMMARY.md) — Comprehensive executive summary & problem-solution mapping.
+- [`ARCHITECTURE_AND_DATABASE.md`](docs/submission/ARCHITECTURE_AND_DATABASE.md) — System architecture & ER database diagrams.
+- [`FEATURE_MATRIX.md`](docs/submission/FEATURE_MATRIX.md) — Verified platform capability matrix.
+- [`DEMO_SCRIPT_AND_BACKUP.md`](docs/submission/DEMO_SCRIPT_AND_BACKUP.md) — 7-scene presentation script and fallback contingency plans.
+- [`PRESENTATION_STRUCTURE.md`](docs/submission/PRESENTATION_STRUCTURE.md) — 13-slide evaluation presentation deck structure.
+- [`TEST_RESULTS.txt`](docs/submission/TEST_RESULTS.txt) — Official pytest runner log showing 144 passed tests.
+- [`FINAL_CHECKLIST.md`](docs/submission/FINAL_CHECKLIST.md) — 18-item pre-submission checklist and freeze declaration.
+
+---
+
+*ClubOps AI — Feature complete, frozen, and submission-ready.*
