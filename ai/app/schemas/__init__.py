@@ -20,6 +20,14 @@ from .actions import (
     UpdateTaskStatusParameters,
 )
 from .common import ActionType, EventType, Priority, RiskSeverity, TaskStatus
+from .communication import (
+    AnnouncementRequest,
+    AnnouncementResult,
+    BriefingCategory,
+    BriefingItem,
+    BriefingRequest,
+    DailyBriefing,
+)
 from .event import Event, Milestone
 from .knowledge import (
     KnowledgeAnswer,
@@ -45,14 +53,20 @@ __all__ = [
     "ActionEngineRequest",
     "ActionProposalList",
     "ActionType",
+    "AnnouncementRequest",
+    "AnnouncementResult",
     "AssignTaskAction",
     "AssignTaskParameters",
+    "BriefingCategory",
+    "BriefingItem",
+    "BriefingRequest",
     "CreateAnnouncementAction",
     "CreateAnnouncementParameters",
     "CreateEventAction",
     "CreateEventParameters",
     "CreateTaskAction",
     "CreateTaskParameters",
+    "DailyBriefing",
     "Event",
     "EventType",
     "KnowledgeAnswer",

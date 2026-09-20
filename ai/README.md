@@ -9,6 +9,7 @@ Intelligent operational backend service for ClubOps. Provides LLM integration, s
 - **Sprint 5 Risk Intelligence (`app/services/risk_intelligence.py`)**: Analyzes multi-faceted operational context (events, tasks, deadlines, owners, dependencies, staffing) and extracts strictly grounded, structured risks.
 - **Sprint 6 Action Engine (`app/services/action_engine.py`)**: Analyzes user intent alongside multi-dimensional context (event, task, meeting, risk, operational, and people context) to produce grounded action proposals.
 - **Sprint 7 Knowledge Assistant / RAG (`app/services/knowledge_assistant.py`)**: Answers queries strictly from retrieved club knowledge using deterministic chunking, BM25 lexical retrieval, and verified source grounding.
+- **Sprint 8 AI Communication Services (`app/services/announcement_generator.py`, `app/services/daily_briefing.py`)**: Drafts strictly grounded club announcements and synthesizes operational context into categorized daily briefings without publishing or executing actions.
 - **Action Validation (`/actions/validate`)**: Enforces whitelist discrimination on AI-generated actions (`create_task`, `update_task`, `assign_task`, `update_task_status`, `create_announcement`, `create_event`).
 - **Hallucination-Resistant Schemas**: Pydantic models forbidding extra fields (`extra="forbid"`) and supporting nullable fields for unverified facts.
 
@@ -246,6 +247,71 @@ if __name__ == "__main__":
     asyncio.run(main())
 ```
 
+## Sprint 8 AI Communication Services
+
+Sprint 8 introduces two evidence-based communication intelligence engines:
+1. **AI Announcement Generator (`app/services/announcement_generator.py`)**: Drafts professional announcements strictly from supplied facts without fabricating event details.
+2. **AI Daily Briefing (`app/services/daily_briefing.py`)**: Synthesizes tasks, deadlines, risks, events, and meetings into categorized, evidence-grounded operational briefings.
+
+### Zero-Mutation & Draft-Only Guarantee
+> [!IMPORTANT]
+> Both communication services are strictly read-only intelligence engines:
+> - **Drafts Only**: Announcements are generated as proposals (`AnnouncementResult`) and are **never automatically sent or published**.
+> - **No Action Execution**: Daily briefings are informational summaries for club leadership and **never execute actions or mutate databases**.
+
+### Announcement Generator
+Transforms supplied operational facts into clear, audience-tailored draft communications:
+- **Input (`AnnouncementRequest`)**: `purpose`, `audience?`, `event_info?`, `key_details?`, `tone?`.
+- **Output (`AnnouncementResult`)**: `title`, `body`, `audience?`, `grounded`, `used_facts`.
+- **Anti-Fabrication**: Never invents dates, times, locations, ticket prices, deadlines, or registration links. Tone affects vocabulary and style only, never factual content.
+- **Grounding Validation**: Every claim in `used_facts` must be verified against supplied facts (requiring at least two non-generic matching terms or a substantial matching phrase).
+
+### Daily Briefing
+Synthesizes multi-dimensional operational context for leadership:
+- **Input (`BriefingRequest`)**: `date`, `tasks?`, `deadlines?`, `risks?`, `events?`, `meetings?`, `operational_context?`.
+- **Output (`DailyBriefing`)**: `date`, `summary`, `items: list[BriefingItem]`, `grounded`.
+- **Categories**: `urgent`, `deadline`, `task`, `risk`, `event`, `meeting`, `general`.
+- **Evidence Verification**: Every briefing item includes an `evidence` list directly derived from supplied operational input. Fabricated evidence is rejected with `CommunicationValidationError`.
+
+### Example Usage
+
+```python
+import asyncio
+from app.schemas.communication import AnnouncementRequest, BriefingRequest
+from app.services.announcement_generator import AnnouncementGeneratorService
+from app.services.daily_briefing import DailyBriefingService
+
+async def main():
+    # 1. Generate an Announcement Draft
+    announcement_svc = AnnouncementGeneratorService()
+    ann_request = AnnouncementRequest(
+        purpose="Invite members to robotics workshop",
+        event_info="Robotics Automation 2026",
+        key_details=["Date: Nov 12 at 2pm", "Venue: Engineering Lab 4", "Free admission"],
+        tone="enthusiastic",
+    )
+    draft = await announcement_svc.generate(ann_request)
+    print(f"Announcement Title: {draft.title}")
+    print(f"Announcement Body:\n{draft.body}")
+    print(f"Used Facts: {draft.used_facts}")
+
+    # 2. Generate a Daily Operational Briefing
+    briefing_svc = DailyBriefingService()
+    brief_request = BriefingRequest(
+        date="2026-11-10",
+        tasks=[{"id": "t-1", "title": "Setup Lab 4 equipment", "status": "PENDING"}],
+        deadlines=[{"milestone": "Catering order cutoff", "due": "2026-11-11"}],
+    )
+    briefing = await briefing_svc.generate(brief_request)
+    print(f"Daily Briefing ({briefing.date}): {briefing.summary}")
+    for item in briefing.items:
+        print(f"  [{item.category.upper()}] {item.title}: {item.summary}")
+        print(f"    Evidence: {item.evidence}")
+
+if __name__ == "__main__":
+    asyncio.run(main())
+```
+
 ## Requirements
 
 - Python 3.11+ (3.10 minimum)
@@ -288,6 +354,7 @@ Interactive API documentation available at `http://localhost:8001/docs`.
 - `actions.AIAction`: Discriminated union of 6 permitted actions
 - `action_engine`: `ActionEngineRequest`, `ActionProposalList`
 - `knowledge`: `KnowledgeDocument`, `KnowledgeChunk`, `KnowledgeQueryRequest`, `KnowledgeSource`, `KnowledgeAnswer`
+- `communication`: `AnnouncementRequest`, `AnnouncementResult`, `BriefingRequest`, `BriefingItem`, `DailyBriefing`
 
 ### Supported AI Actions (Whitelist)
 `create_task` | `update_task` | `assign_task` | `update_task_status` | `create_announcement` | `create_event`
