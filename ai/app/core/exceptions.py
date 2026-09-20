@@ -121,3 +121,7 @@ class ActionValidationError(AIValidationError):
 class RiskValidationError(AIValidationError):
     default_message = "Risk validation failed."
 
+
+class KnowledgeValidationError(AIValidationError):
+    default_message = "Knowledge grounding validation failed."
+

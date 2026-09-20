@@ -21,6 +21,13 @@ from .actions import (
 )
 from .common import ActionType, EventType, Priority, RiskSeverity, TaskStatus
 from .event import Event, Milestone
+from .knowledge import (
+    KnowledgeAnswer,
+    KnowledgeChunk,
+    KnowledgeDocument,
+    KnowledgeQueryRequest,
+    KnowledgeSource,
+)
 from .meeting import MeetingActionItem, MeetingResult
 from .meeting_intelligence import MeetingIntelligenceRequest
 from .risk import Risk
@@ -48,6 +55,11 @@ __all__ = [
     "CreateTaskParameters",
     "Event",
     "EventType",
+    "KnowledgeAnswer",
+    "KnowledgeChunk",
+    "KnowledgeDocument",
+    "KnowledgeQueryRequest",
+    "KnowledgeSource",
     "MeetingActionItem",
     "MeetingIntelligenceRequest",
     "MeetingResult",

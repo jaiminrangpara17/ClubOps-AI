@@ -8,6 +8,7 @@ Intelligent operational backend service for ClubOps. Provides LLM integration, s
 - **Event Planner (`/events/plan`)**: Generates structured, schema-compliant event plans with tasks, milestones, and risk analysis from natural language.
 - **Sprint 5 Risk Intelligence (`app/services/risk_intelligence.py`)**: Analyzes multi-faceted operational context (events, tasks, deadlines, owners, dependencies, staffing) and extracts strictly grounded, structured risks.
 - **Sprint 6 Action Engine (`app/services/action_engine.py`)**: Analyzes user intent alongside multi-dimensional context (event, task, meeting, risk, operational, and people context) to produce grounded action proposals.
+- **Sprint 7 Knowledge Assistant / RAG (`app/services/knowledge_assistant.py`)**: Answers queries strictly from retrieved club knowledge using deterministic chunking, BM25 lexical retrieval, and verified source grounding.
 - **Action Validation (`/actions/validate`)**: Enforces whitelist discrimination on AI-generated actions (`create_task`, `update_task`, `assign_task`, `update_task_status`, `create_announcement`, `create_event`).
 - **Hallucination-Resistant Schemas**: Pydantic models forbidding extra fields (`extra="forbid"`) and supporting nullable fields for unverified facts.
 
@@ -161,10 +162,89 @@ async def main():
         print(f"Action: {action.action}, requires_confirmation: {action.requires_confirmation}")
         print(f"Parameters: {action.parameters.model_dump()}")
 
+## Sprint 7 Knowledge Assistant / RAG
+
+The Knowledge Assistant is a strictly grounded Retrieval-Augmented Generation (RAG) service (`app/services/knowledge_assistant.py`) designed to answer club questions exclusively using verified knowledge retrieved from club documents.
+
+### Purpose
+Club operations involve diverse guidelines, safety rules, bylaws, and logistics documents. The Knowledge Assistant answers queries strictly using retrieved evidence. If sufficient club knowledge is not available, it explicitly returns `grounded=false` with an insufficient information message, preventing hallucinations and outside knowledge leakage.
+
+### Architecture & Pipeline
+
+```
+Club Documents (KnowledgeDocument)
+       ↓
+Deterministic Chunking (chunk_document)
+       ↓
+Indexed Chunks (KnowledgeChunk)
+       ↓
+Lexical Retrieval (KnowledgeRetriever - BM25)
+       ↓
+Top-K Relevant Chunks
+       ↓
+[Zero evidence? → grounded=false, NO LLM call]
+       ↓
+Strict Grounded Prompt (build_knowledge_prompt)
+       ↓
+LLM Abstraction (LLMService)
+       ↓
+Structured Output Validation (validate_ai_output)
+       ↓
+Deterministic Source Grounding (validate_knowledge_answer)
+       ↓
+KnowledgeAnswer (answer + verified sources + grounded flag)
+```
+
+### Lexical Retrieval (BM25)
+For this hackathon release, retrieval is implemented using a pure-Python, deterministic Okapi/Lucene BM25 lexical ranking engine:
+- Normalizes case and tokenizes text deterministically into word stems.
+- Computes positive Inverse Document Frequency (IDF) and term frequency with saturation parameters ($k_1=1.5, b=0.75$).
+- Breaks ties deterministically by chunk identifier.
+- Returns an empty list (`[]`) when no query tokens match the indexed corpus, completely bypassing LLM execution.
+- No heavy external vector database or multi-agent overhead.
+
+### Source Grounding & Anti-Hallucination
+Answers pass through a deterministic validator (`app/validators/knowledge_validator.py`):
+1. **Source Grounding**: Every cited source must correspond to an actually retrieved chunk. Mismatched or fabricated `document_id`, `chunk_id`, or `title` triggers an immediate `KnowledgeValidationError`.
+2. **Citation Veracity**: Cited text excerpts must exist within the matched chunk content (exact excerpt or >=60% token overlap). Fabricated text is rejected.
+3. **Mandatory Citations**: When `grounded=true`, the `sources` list must not be empty.
+4. **Insufficient Evidence Enforcement**: When `grounded=false`, the answer text must explicitly indicate insufficient available club knowledge.
+5. **Zero Action Execution**: The service contains zero execution methods, never connects to databases directly, and never mutates state.
+
+### Example Usage
+
+```python
+import asyncio
+from app.schemas.knowledge import KnowledgeDocument, KnowledgeQueryRequest
+from app.knowledge.chunker import chunk_document
+from app.knowledge.retriever import KnowledgeRetriever
+from app.services.knowledge_assistant import KnowledgeAssistantService
+
+async def main():
+    # 1. Ingest and chunk documents
+    policy_doc = KnowledgeDocument(
+        document_id="doc-reimburse",
+        title="Reimbursement Policy",
+        content="Reimbursement requests must be submitted within 14 days of purchase with itemized receipts.",
+    )
+    chunks = chunk_document(policy_doc, chunk_size=300, overlap=30)
+
+    # 2. Index in deterministic lexical retriever
+    retriever = KnowledgeRetriever(chunks)
+
+    # 3. Query the Knowledge Assistant
+    service = KnowledgeAssistantService(retriever=retriever)
+    request = KnowledgeQueryRequest(query="How long do I have to submit reimbursement?", top_k=3)
+    result = await service.answer(request)
+
+    print(f"Grounded: {result.grounded}")
+    print(f"Answer: {result.answer}")
+    for source in result.sources:
+        print(f"  Source [{source.chunk_id}] ({source.title}): {source.text}")
+
 if __name__ == "__main__":
     asyncio.run(main())
 ```
-
 
 ## Requirements
 
@@ -206,7 +286,8 @@ Interactive API documentation available at `http://localhost:8001/docs`.
 - `meeting.MeetingResult`: `summary`, `decisions[]`, `action_items[]`, `risks[]`
 - `risk.Risk`: `title`, `description` (AI explanation), `severity`, `reason` (factual signal), `affected_tasks[]`, `recommended_action?`, `is_ai_prediction`
 - `actions.AIAction`: Discriminated union of 6 permitted actions
-- `action_engine`: `ActionEngineContext`, `ActionProposal`, `ActionEngineResult`, `TaskContextItem`, `PersonContextItem`
+- `action_engine`: `ActionEngineRequest`, `ActionProposalList`
+- `knowledge`: `KnowledgeDocument`, `KnowledgeChunk`, `KnowledgeQueryRequest`, `KnowledgeSource`, `KnowledgeAnswer`
 
 ### Supported AI Actions (Whitelist)
 `create_task` | `update_task` | `assign_task` | `update_task_status` | `create_announcement` | `create_event`
